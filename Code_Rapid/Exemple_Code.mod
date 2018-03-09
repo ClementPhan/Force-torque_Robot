@@ -24,14 +24,11 @@ MODULE Exemple_Code
     VAR bool conFlag;
 
     PROC PathRoutine()
-        ! Connect to the correction generators for horizontal and
-        vertical correction.
+        ! Connect to the correction generators for horizontal and vertical correction.
         CorrCon hori_id;
         CorrCon vert_id;
         conFlag := TRUE;
-        ! Setup a 5 Hz timer interrupt. The trap routine will read the
-        sensor values and
-        ! compute the path corrections.
+        ! Setup a 5 Hz timer interrupt. The trap routine will read the sensor values and compute the path corrections.
         CONNECT intno1 WITH ReadSensors;
         ITimer\Single, 0.2, intno1;
         ! Position for start of contour tracking
@@ -50,8 +47,7 @@ MODULE Exemple_Code
         ! Run MoveL with only horizontal interrupt correction.
         MoveL p30,v100,z10,tool1\Corr;
         ! Remove all outstanding connected correction generators.
-        ! In this case, the only connected correction generator is the one for horizontal
-        ! correction.
+        ! In this case, the only connected correction generator is the one for horizontal correction.
         CorrClear;
         ! Remove the timer interrupt.
         IDelete intno1;
@@ -60,16 +56,14 @@ MODULE Exemple_Code
     TRAP ReadSensors
         VAR num horiSig;
         VAR num vertSig;
-        ! Compute the horizontal correction values and execute the
-        correction.
+        ! Compute the horizontal correction values and execute the correction.
         horiSig := hori_sig;
         write_offset.x := 0;
         write_offset.y := (hori_sig - TARGET_DIST)*SCALE_FACTOR;
         write_offset.z := 0;
         CorrWrite hori_id, write_offset;
         IF conFlag THEN
-        ! Compute the vertical correction values and execute the
-        correction.
+        ! Compute the vertical correction values and execute the correction.
         write_offset.x := 0;
         write_offset.y := 0;
         write_offset.z := (vert_sig - TARGET_DIST)*SCALE_FACTOR;
