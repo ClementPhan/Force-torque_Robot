@@ -1,28 +1,28 @@
 MODULE Correction_Z_1
     !***********************************************************
     !
-    ! Module†:  Correction_Z_1
+    ! ModuleÔøΩ:  Correction_Z_1
     !
-    ! Description : Code test avec correction en Z : le robot suit une trajectoire donnÈe et au bout
-    !   d'une durÈe t, il effectue un pic selon les coordonnÈes Z (normales ‡ la trajectoire)
+    ! Description : Code test avec correction en Z : le robot suit une trajectoire donnÔøΩe et au bout
+    !   d'une durÔøΩe t, il effectue un pic selon les coordonnÔøΩes Z (normales ÔøΩ la trajectoire)
     !
     ! Auteur : Nahkriin
     !
     ! Version : 1.0
     !
     !***********************************************************
-    
-    CONST num OFFSET := 10000000000000;  ! Amplitude du pic
-    CONST num TAU := 2; !DurÈe aprËs laquelle le pic intervient
+
+    CONST num OFFSET := 1000;  ! Amplitude du pic
+    CONST num TAU := 2; !DurÔøΩe aprÔøΩs laquelle le pic intervient
     VAR intnum timeint;
     VAR clock timer;
     VAR num time;
-    
+
     VAR corrdescr z_id;
     VAR pos write_offset;
-    
-    VAR bool ConFlag:= TRUE;
-    
+
+    VAR bool ConFlag;
+
     ! =============DECLARATIONS============
     VAR speeddata MySpeed:=[100,100,5000,1000];
     CONST jointtarget Targ0:=[[33.91,89.83,-18.86,0,19.03,0],[0,9E+09,9E+09,9E+09,9E+09,9E+09]];
@@ -80,8 +80,8 @@ MODULE Correction_Z_1
     CONST robtarget Targ52:=[[418.38,-279.55,0],[0,0.2903,0.9569,0],[-1,0,0,0],[0,9E+09,9E+09,9E+09,9E+09,9E+09]];
     CONST robtarget Targ53:=[[418.38,-290.33,0],[0,0.2987,0.9543,0],[-1,0,-1,0],[0,9E+09,9E+09,9E+09,9E+09,9E+09]];
     CONST jointtarget Targ54:=[[-35.74,90.77,-21.87,0,21.09,0],[0,9E+09,9E+09,9E+09,9E+09,9E+09]];
-        
-    TRAP rtest
+
+    TRAP routine
         time := ClkRead(timer);
         IF time>=TAU THEN
             IF ConFlag THEN
@@ -89,29 +89,29 @@ MODULE Correction_Z_1
             write_offset.y := 0;
             write_offset.z := OFFSET;
             CorrWrite z_id, write_offset;
-            write_offset.z := 0;
             ConFlag := FALSE;
             ENDIF
         ENDIF
     ENDTRAP
 
-    
+
     PROC main()
-        
+
         ClkReset timer;
-        
-        CorrClear;        
+
         CorrCon z_id;
-        
-        CONNECT timeint WITH rtest;
-        ITimer 0.2, timeint; 
-        
+
+        ConFlag := TRUE;
+
+        CONNECT timeint WITH routine;
+        ITimer\Single, 0.2, timeint; ! A revoir
+
         ConfJ \Off;
         ConfL \Off;
-        MoveAbsJ Targ0,MySpeed,z1,Tool0;
-        
+        MoveAbsJ Targ0,MySpeed,z1,Tool0; ! Initialisation : le robot va au point de d√©part de la trajectoire
+
         ClkStart timer;
-        
+
         MoveL Targ1,MySpeed,z1,Tool0\WObj:=WObj0\Corr;
         MoveL Targ2,MySpeed,z1,Tool0\WObj:=WObj0\Corr;
         MoveL Targ3,MySpeed,z1,Tool0\WObj:=WObj0\Corr;
@@ -166,12 +166,12 @@ MODULE Correction_Z_1
         MoveL Targ52,MySpeed,z1,Tool0\WObj:=WObj0\Corr;
         MoveL Targ53,MySpeed,z1,Tool0\WObj:=WObj0;
         MoveAbsJ Targ54,MySpeed,z1,Tool0;
-        
+
         CorrDiscon z_id;
         IDelete timeint;
-        
+
     ENDPROC
-        
-        
-        
+
+
+
 ENDMODULE
