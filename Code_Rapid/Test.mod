@@ -1,10 +1,10 @@
 MODULE Correction_Z_1
     !***********************************************************
     !
-    ! Module�:  Correction_Z_1
+    ! Module:  Correction_Z_1
     !
-    ! Description : Code test avec correction en Z : le robot suit une trajectoire donn�e et au bout
-    !   d'une dur�e t, il effectue un pic selon les coordonn�es Z (normales � la trajectoire)
+    ! Description : Code test avec correction en Z : le robot suit une trajectoire donnee et au bout
+    !   d'une duree t, il effectue un pic selon les coordonnees Z (normales a la trajectoire)
     !
     ! Auteur : Nahkriin
     !
@@ -13,12 +13,13 @@ MODULE Correction_Z_1
     !***********************************************************
 
     CONST num OFFSET := 100;  ! Amplitude du pic
-    CONST num TAU := 2; !Dur�e apr�s laquelle le pic intervient
+    CONST num TAU := 2; !Duree apres laquelle le pic intervient
     VAR intnum timeint;
     VAR clock timer;
 
     VAR corrdescr z_id; !Variables de correction
     VAR pos write_offset;
+    VAR pos total_offset;
 
     ! =============DECLARATIONS============
     VAR speeddata MySpeed:=[100,100,5000,1000];
@@ -88,6 +89,9 @@ MODULE Correction_Z_1
             write_offset.y := 0;
             write_offset.z := OFFSET;
             CorrWrite z_id, write_offset;
+            total_offset := CorrRead();
+! Write the total vertical correction on the FlexPendant.
+            TPWrite "The total vertical correction is:"\Num:=total_offset.z; !On affiche la corrction réalisée [A tester]
             IDelete timeint; !On reconnecte avec la routine suivante
             CONNECT timeint WITH routine2;
             ITimer\Single, 0.2, timeint; ! A revoir
