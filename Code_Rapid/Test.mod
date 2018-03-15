@@ -12,20 +12,19 @@ MODULE Correction_Z_1
     !
     !***********************************************************
 
-    CONST num OFFSET := 1000;  ! Amplitude du pic
+    CONST num OFFSET := 100;  ! Amplitude du pic
     CONST num TAU := 2; !Dur�e apr�s laquelle le pic intervient
     VAR intnum timeint;
     VAR clock timer;
-    VAR num time;
 
-    VAR corrdescr z_id;
+    VAR corrdescr z_id; !Variables de correction
     VAR pos write_offset;
-
-    VAR bool ConFlag;
 
     ! =============DECLARATIONS============
     VAR speeddata MySpeed:=[100,100,5000,1000];
+
     CONST jointtarget Targ0:=[[33.91,89.83,-18.86,0,19.03,0],[0,9E+09,9E+09,9E+09,9E+09,9E+09]];
+
     CONST robtarget Targ1:=[[418.38,270.47,0],[0,-0.283,0.9591,0],[0,0,0,0],[0,9E+09,9E+09,9E+09,9E+09,9E+09]];
     CONST robtarget Targ2:=[[418.38,259.68,0],[0,-0.2742,0.9617,0],[0,0,0,0],[0,9E+09,9E+09,9E+09,9E+09,9E+09]];
     CONST robtarget Targ3:=[[418.38,248.9,0],[0,-0.2651,0.9642,0],[0,0,0,0],[0,9E+09,9E+09,9E+09,9E+09,9E+09]];
@@ -79,29 +78,36 @@ MODULE Correction_Z_1
     CONST robtarget Targ51:=[[418.38,-268.76,0],[0,0.2816,0.9595,0],[-1,0,0,0],[0,9E+09,9E+09,9E+09,9E+09,9E+09]];
     CONST robtarget Targ52:=[[418.38,-279.55,0],[0,0.2903,0.9569,0],[-1,0,0,0],[0,9E+09,9E+09,9E+09,9E+09,9E+09]];
     CONST robtarget Targ53:=[[418.38,-290.33,0],[0,0.2987,0.9543,0],[-1,0,-1,0],[0,9E+09,9E+09,9E+09,9E+09,9E+09]];
+
     CONST jointtarget Targ54:=[[-35.74,90.77,-21.87,0,21.09,0],[0,9E+09,9E+09,9E+09,9E+09,9E+09]];
 
-    TRAP routine
+    TRAP routine !Routine de pic-haut
         time := ClkRead(timer);
-        IF time>=TAU THEN
-            IF ConFlag THEN
+        IF time>=TAU THEN !Critère de début du pic
             write_offset.x := 0;
             write_offset.y := 0;
             write_offset.z := OFFSET;
             CorrWrite z_id, write_offset;
-            ConFlag := FALSE;
-            ENDIF
+            IDelete timeint; !On reconnecte avec la routine suivante
+            CONNECT timeint WITH routine2;
+            ITimer\Single, 0.2, timeint; ! A revoir
         ENDIF
     ENDTRAP
 
+    TRAP routine2 !Routine de pic-bas
+            write_offset.x := 0;
+            write_offset.y := 0;
+            write_offset.z := -OFFSET; !On enlève l'offset
+            CorrWrite z_id, write_offset;
+            CorrDiscon z_id; !On déconnecte le correcteur pour qu'on ne fasse plus d'offset
+            IDelete timeint; !On déconnecte les routines
+    ENDTRAP
 
     PROC main()
 
         ClkReset timer;
 
         CorrCon z_id;
-
-        ConFlag := TRUE;
 
         CONNECT timeint WITH routine;
         ITimer\Single, 0.2, timeint; ! A revoir
@@ -165,10 +171,11 @@ MODULE Correction_Z_1
         MoveL Targ51,MySpeed,z1,Tool0\WObj:=WObj0\Corr;
         MoveL Targ52,MySpeed,z1,Tool0\WObj:=WObj0\Corr;
         MoveL Targ53,MySpeed,z1,Tool0\WObj:=WObj0;
-        MoveAbsJ Targ54,MySpeed,z1,Tool0;
 
-        CorrDiscon z_id;
-        IDelete timeint;
+        MoveAbsJ Targ0,MySpeed,z1,Tool0; !On revient au point de départ
+
+        CorrClear;
+        Click
 
     ENDPROC
 
