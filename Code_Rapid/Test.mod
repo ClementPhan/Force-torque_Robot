@@ -1,7 +1,7 @@
-MODULE Correction_Z_1
+MODULE Test_1
     !***********************************************************
     !
-    ! Module:  Correction_Z_1
+    ! Module:  Test_1
     !
     ! Description : Code test avec correction en Z : le robot suit une trajectoire donnee et au bout
     !   d'une duree t, il effectue un pic selon les coordonnees Z (normales a la trajectoire)
@@ -12,10 +12,12 @@ MODULE Correction_Z_1
     !
     !***********************************************************
 
-    CONST num OFFSET := 100;  ! Amplitude du pic
+    CONST num OFFSET := 1000;  ! Amplitude du pic
     CONST num TAU := 2; !Duree apres laquelle le pic intervient
-    VAR intnum timeint;
+    VAR intnum timeint := 10;
+    VAR intnum timeint_2 := 10;
     VAR clock timer;
+	VAR num time :=0;
 
     VAR corrdescr z_id; !Variables de correction
     VAR pos write_offset;
@@ -84,27 +86,31 @@ MODULE Correction_Z_1
 
     TRAP routine !Routine de pic-haut
         time := ClkRead(timer);
-        IF time>=TAU THEN !Critère de début du pic
+        IF time>=TAU THEN !CritÃ¨re de dÃ©but du pic
             write_offset.x := 0;
             write_offset.y := 0;
             write_offset.z := OFFSET;
+			
             CorrWrite z_id, write_offset;
             total_offset := CorrRead();
-! Write the total vertical correction on the FlexPendant.
-            TPWrite "The total vertical correction is:"\Num:=total_offset.z; !On affiche la corrction réalisée [A tester]
+            TPWrite "The total vertical correction is:"\Num:=total_offset.z; !On affiche la corrction rÃ©alisÃ©e [A tester]
+			
             IDelete timeint; !On reconnecte avec la routine suivante
-            CONNECT timeint WITH routine2;
-            ITimer\Single, 0.2, timeint; ! A revoir
+            CONNECT timeint_2 WITH routine2;
+            ITimer 0.2, timeint_2; ! A revoir
         ENDIF
     ENDTRAP
 
     TRAP routine2 !Routine de pic-bas
             write_offset.x := 0;
             write_offset.y := 0;
-            write_offset.z := -OFFSET; !On enlève l'offset
+            write_offset.z := -OFFSET; !On enlÃ¨ve l'offset
+            TPWrite "Second routine"; !On affiche la corrction rÃ©alisÃ©e [A tester]
+			
             CorrWrite z_id, write_offset;
-            CorrDiscon z_id; !On déconnecte le correcteur pour qu'on ne fasse plus d'offset
-            IDelete timeint; !On déconnecte les routines
+            CorrDiscon z_id; !On dÃ©connecte le correcteur pour qu'on ne fasse plus d'offset
+			
+            IDelete timeint_2; !On dÃ©connecte les routines
     ENDTRAP
 
     PROC main()
@@ -114,75 +120,75 @@ MODULE Correction_Z_1
         CorrCon z_id;
 
         CONNECT timeint WITH routine;
-        ITimer\Single, 0.2, timeint; ! A revoir
+        ITimer 0.2, timeint; ! A revoir
 
         ConfJ \Off;
         ConfL \Off;
-        MoveAbsJ Targ0,MySpeed,z1,Tool0; ! Initialisation : le robot va au point de départ de la trajectoire
-
+        MoveAbsJ Targ0,MySpeed,z1,Tool0; ! Initialisation : le robot va au point de dÃ©part de la trajectoire
+        
+        TPWrite "Starting routine."; !On affiche la corrction rÃ©alisÃ©e [A tester]
         ClkStart timer;
 
-        MoveL Targ1,MySpeed,z1,Tool0\WObj:=WObj0\Corr;
-        MoveL Targ2,MySpeed,z1,Tool0\WObj:=WObj0\Corr;
-        MoveL Targ3,MySpeed,z1,Tool0\WObj:=WObj0\Corr;
-        MoveL Targ4,MySpeed,z1,Tool0\WObj:=WObj0\Corr;
-        MoveL Targ5,MySpeed,z1,Tool0\WObj:=WObj0\Corr;
-        MoveL Targ6,MySpeed,z1,Tool0\WObj:=WObj0\Corr;
-        MoveL Targ7,MySpeed,z1,Tool0\WObj:=WObj0\Corr;
-        MoveL Targ8,MySpeed,z1,Tool0\WObj:=WObj0\Corr;
-        MoveL Targ9,MySpeed,z1,Tool0\WObj:=WObj0\Corr;
-        MoveL Targ10,MySpeed,z1,Tool0\WObj:=WObj0\Corr;
-        MoveL Targ11,MySpeed,z1,Tool0\WObj:=WObj0\Corr;
-        MoveL Targ12,MySpeed,z1,Tool0\WObj:=WObj0\Corr;
-        MoveL Targ13,MySpeed,z1,Tool0\WObj:=WObj0\Corr;
-        MoveL Targ14,MySpeed,z1,Tool0\WObj:=WObj0\Corr;
-        MoveL Targ15,MySpeed,z1,Tool0\WObj:=WObj0\Corr;
-        MoveL Targ16,MySpeed,z1,Tool0\WObj:=WObj0\Corr;
-        MoveL Targ17,MySpeed,z1,Tool0\WObj:=WObj0\Corr;
-        MoveL Targ18,MySpeed,z1,Tool0\WObj:=WObj0\Corr;
-        MoveL Targ19,MySpeed,z1,Tool0\WObj:=WObj0\Corr;
-        MoveL Targ20,MySpeed,z1,Tool0\WObj:=WObj0\Corr;
-        MoveL Targ21,MySpeed,z1,Tool0\WObj:=WObj0\Corr;
-        MoveL Targ22,MySpeed,z1,Tool0\WObj:=WObj0\Corr;
-        MoveL Targ23,MySpeed,z1,Tool0\WObj:=WObj0\Corr;
-        MoveL Targ24,MySpeed,z1,Tool0\WObj:=WObj0\Corr;
-        MoveL Targ25,MySpeed,z1,Tool0\WObj:=WObj0\Corr;
-        MoveL Targ26,MySpeed,z1,Tool0\WObj:=WObj0\Corr;
-        MoveL Targ27,MySpeed,z1,Tool0\WObj:=WObj0\Corr;
-        MoveL Targ28,MySpeed,z1,Tool0\WObj:=WObj0\Corr;
-        MoveL Targ29,MySpeed,z1,Tool0\WObj:=WObj0\Corr;
-        MoveL Targ30,MySpeed,z1,Tool0\WObj:=WObj0\Corr;
-        MoveL Targ31,MySpeed,z1,Tool0\WObj:=WObj0\Corr;
-        MoveL Targ32,MySpeed,z1,Tool0\WObj:=WObj0\Corr;
-        MoveL Targ33,MySpeed,z1,Tool0\WObj:=WObj0\Corr;
-        MoveL Targ34,MySpeed,z1,Tool0\WObj:=WObj0\Corr;
-        MoveL Targ35,MySpeed,z1,Tool0\WObj:=WObj0\Corr;
-        MoveL Targ36,MySpeed,z1,Tool0\WObj:=WObj0\Corr;
-        MoveL Targ37,MySpeed,z1,Tool0\WObj:=WObj0\Corr;
-        MoveL Targ38,MySpeed,z1,Tool0\WObj:=WObj0\Corr;
-        MoveL Targ39,MySpeed,z1,Tool0\WObj:=WObj0\Corr;
-        MoveL Targ40,MySpeed,z1,Tool0\WObj:=WObj0\Corr;
-        MoveL Targ41,MySpeed,z1,Tool0\WObj:=WObj0\Corr;
-        MoveL Targ42,MySpeed,z1,Tool0\WObj:=WObj0\Corr;
-        MoveL Targ43,MySpeed,z1,Tool0\WObj:=WObj0\Corr;
-        MoveL Targ44,MySpeed,z1,Tool0\WObj:=WObj0\Corr;
-        MoveL Targ45,MySpeed,z1,Tool0\WObj:=WObj0\Corr;
-        MoveL Targ46,MySpeed,z1,Tool0\WObj:=WObj0\Corr;
-        MoveL Targ47,MySpeed,z1,Tool0\WObj:=WObj0\Corr;
-        MoveL Targ48,MySpeed,z1,Tool0\WObj:=WObj0\Corr;
-        MoveL Targ49,MySpeed,z1,Tool0\WObj:=WObj0\Corr;
-        MoveL Targ50,MySpeed,z1,Tool0\WObj:=WObj0\Corr;
-        MoveL Targ51,MySpeed,z1,Tool0\WObj:=WObj0\Corr;
-        MoveL Targ52,MySpeed,z1,Tool0\WObj:=WObj0\Corr;
-        MoveL Targ53,MySpeed,z1,Tool0\WObj:=WObj0;
+        MoveL Targ1,MySpeed,Fine,Tool0\WObj:=WObj0\Corr;
+        MoveL Targ2,MySpeed,Fine,Tool0\WObj:=WObj0\Corr;
+        MoveL Targ3,MySpeed,Fine,Tool0\WObj:=WObj0\Corr;
+        MoveL Targ4,MySpeed,Fine,Tool0\WObj:=WObj0\Corr;
+        MoveL Targ5,MySpeed,Fine,Tool0\WObj:=WObj0\Corr;
+        MoveL Targ6,MySpeed,Fine,Tool0\WObj:=WObj0\Corr;
+        MoveL Targ7,MySpeed,Fine,Tool0\WObj:=WObj0\Corr;
+        MoveL Targ8,MySpeed,Fine,Tool0\WObj:=WObj0\Corr;
+        MoveL Targ9,MySpeed,Fine,Tool0\WObj:=WObj0\Corr;
+        MoveL Targ10,MySpeed,Fine,Tool0\WObj:=WObj0\Corr;
+        MoveL Targ11,MySpeed,Fine,Tool0\WObj:=WObj0\Corr;
+        MoveL Targ12,MySpeed,Fine,Tool0\WObj:=WObj0\Corr;
+        MoveL Targ13,MySpeed,Fine,Tool0\WObj:=WObj0\Corr;
+        MoveL Targ14,MySpeed,Fine,Tool0\WObj:=WObj0\Corr;
+        MoveL Targ15,MySpeed,Fine,Tool0\WObj:=WObj0\Corr;
+        MoveL Targ16,MySpeed,Fine,Tool0\WObj:=WObj0\Corr;
+        MoveL Targ17,MySpeed,Fine,Tool0\WObj:=WObj0\Corr;
+        MoveL Targ18,MySpeed,Fine,Tool0\WObj:=WObj0\Corr;
+        MoveL Targ19,MySpeed,Fine,Tool0\WObj:=WObj0\Corr;
+        MoveL Targ20,MySpeed,Fine,Tool0\WObj:=WObj0\Corr;
+        MoveL Targ21,MySpeed,Fine,Tool0\WObj:=WObj0\Corr;
+        MoveL Targ22,MySpeed,Fine,Tool0\WObj:=WObj0\Corr;
+        MoveL Targ23,MySpeed,Fine,Tool0\WObj:=WObj0\Corr;
+        MoveL Targ24,MySpeed,Fine,Tool0\WObj:=WObj0\Corr;
+        MoveL Targ25,MySpeed,Fine,Tool0\WObj:=WObj0\Corr;
+        MoveL Targ26,MySpeed,Fine,Tool0\WObj:=WObj0\Corr;
+        MoveL Targ27,MySpeed,Fine,Tool0\WObj:=WObj0\Corr;
+        MoveL Targ28,MySpeed,Fine,Tool0\WObj:=WObj0\Corr;
+        MoveL Targ29,MySpeed,Fine,Tool0\WObj:=WObj0\Corr;
+        MoveL Targ30,MySpeed,Fine,Tool0\WObj:=WObj0\Corr;
+        MoveL Targ31,MySpeed,Fine,Tool0\WObj:=WObj0\Corr;
+        MoveL Targ32,MySpeed,Fine,Tool0\WObj:=WObj0\Corr;
+        MoveL Targ33,MySpeed,Fine,Tool0\WObj:=WObj0\Corr;
+        MoveL Targ34,MySpeed,Fine,Tool0\WObj:=WObj0\Corr;
+        MoveL Targ35,MySpeed,Fine,Tool0\WObj:=WObj0\Corr;
+        MoveL Targ36,MySpeed,Fine,Tool0\WObj:=WObj0\Corr;
+        MoveL Targ37,MySpeed,Fine,Tool0\WObj:=WObj0\Corr;
+        MoveL Targ38,MySpeed,Fine,Tool0\WObj:=WObj0\Corr;
+        MoveL Targ39,MySpeed,Fine,Tool0\WObj:=WObj0\Corr;
+        MoveL Targ40,MySpeed,Fine,Tool0\WObj:=WObj0\Corr;
+        MoveL Targ41,MySpeed,Fine,Tool0\WObj:=WObj0\Corr;
+        MoveL Targ42,MySpeed,Fine,Tool0\WObj:=WObj0\Corr;
+        MoveL Targ43,MySpeed,Fine,Tool0\WObj:=WObj0\Corr;
+        MoveL Targ44,MySpeed,Fine,Tool0\WObj:=WObj0\Corr;
+        MoveL Targ45,MySpeed,Fine,Tool0\WObj:=WObj0\Corr;
+        MoveL Targ46,MySpeed,Fine,Tool0\WObj:=WObj0\Corr;
+        MoveL Targ47,MySpeed,Fine,Tool0\WObj:=WObj0\Corr;
+        MoveL Targ48,MySpeed,Fine,Tool0\WObj:=WObj0\Corr;
+        MoveL Targ49,MySpeed,Fine,Tool0\WObj:=WObj0\Corr;
+        MoveL Targ50,MySpeed,Fine,Tool0\WObj:=WObj0\Corr;
+        MoveL Targ51,MySpeed,Fine,Tool0\WObj:=WObj0\Corr;
+        MoveL Targ52,MySpeed,Fine,Tool0\WObj:=WObj0\Corr;
+        MoveL Targ53,MySpeed,Fine,Tool0\WObj:=WObj0\Corr;
 
-        MoveAbsJ Targ0,MySpeed,z1,Tool0; !On revient au point de départ
+        MoveAbsJ Targ0,MySpeed,Fine,Tool0; !On revient au point de dÃ©part
 
         CorrClear;
-        Click
+        TPWrite "Stop routine."; !On affiche la corrction rÃ©alisÃ©e [A tester]
+        ClkReset timer;
 
     ENDPROC
-
-
 
 ENDMODULE
