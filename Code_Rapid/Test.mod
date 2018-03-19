@@ -12,11 +12,14 @@ MODULE Test_1
     !
     !***********************************************************
 
-    CONST num OFFSET := 1000;  ! Amplitude du pic
-    CONST num TAU := 2; !Duree apres laquelle le pic intervient
-    VAR intnum timeint := 10;
+    CONST num OFFSET := 50;	! Amplitude du pic (mm) : attention la hauteur est limitée par la vitesse du robot et est proportionnelle a la duree du pic 
+    CONST num TAU := 1; ! Instant (s) où intervient le pic
+    CONST num D :=2 ; ! Duree (s) du pic
+	
+    VAR intnum timeint := 10;	!ID des routines
     VAR intnum timeint_2 := 10;
-    VAR clock timer;
+	
+    VAR clock timer;	!Variables de l'horloge
 	VAR num time :=0;
 
     VAR corrdescr z_id; !Variables de correction
@@ -84,109 +87,125 @@ MODULE Test_1
 
     CONST jointtarget Targ54:=[[-35.74,90.77,-21.87,0,21.09,0],[0,9E+09,9E+09,9E+09,9E+09,9E+09]];
 
-    TRAP routine !Routine de pic-haut
+
+	
+	!Routine de declenchement du pic 
+	
+    TRAP routine 
+	
         time := ClkRead(timer);
-        IF time>=TAU THEN !CritÃ¨re de dÃ©but du pic
+		
+        IF time>=TAU THEN !Critere du debut du pic
+		
             write_offset.x := 0;
             write_offset.y := 0;
             write_offset.z := OFFSET;
 			
-            CorrWrite z_id, write_offset;
-            total_offset := CorrRead();
-            TPWrite "The total vertical correction is:"\Num:=total_offset.z; !On affiche la corrction rÃ©alisÃ©e [A tester]
+            CorrWrite z_id, write_offset;	!On aplique une correction verticale : montee du pic
 			
-            IDelete timeint; !On reconnecte avec la routine suivante
+            total_offset := CorrRead();
+            TPWrite "The total vertical correction is:"\Num:=total_offset.z;	!Print l'amplitude du pic
+			
+            IDelete timeint; !On deconnecte la routine et on reconnecte avec la routine suivante, l'interrupt interviendra au bout d'une durée D
             CONNECT timeint_2 WITH routine2;
-            ITimer 0.2, timeint_2; ! A revoir
+            ITimer\Single, D, timeint_2;
+			
         ENDIF
+		
     ENDTRAP
+	
+	
+	
+	!Routine de fin du pic
 
-    TRAP routine2 !Routine de pic-bas
+    TRAP routine2 
+	
             write_offset.x := 0;
             write_offset.y := 0;
-            write_offset.z := -OFFSET; !On enlÃ¨ve l'offset
-            TPWrite "Second routine"; !On affiche la corrction rÃ©alisÃ©e [A tester]
+            write_offset.z := -OFFSET; 
+            CorrWrite z_id, write_offset;	!On enleve la correction verticale appliquee : descente du pic
 			
-            CorrWrite z_id, write_offset;
-            CorrDiscon z_id; !On dÃ©connecte le correcteur pour qu'on ne fasse plus d'offset
+            CorrDiscon z_id; !Deconnection du correcteur 
+            IDelete timeint_2; !Deconnection de la routine
 			
-            IDelete timeint_2; !On dÃ©connecte les routines
     ENDTRAP
 
     PROC main()
 
-        ClkReset timer;
+        ClkReset timer;	!Reinitialisation horloge
 
-        CorrCon z_id;
+        CorrCon z_id;	!Connection du correcteur
 
-        CONNECT timeint WITH routine;
-        ITimer 0.2, timeint; ! A revoir
+        CONNECT timeint WITH routine;	!Connection avec la routine de declenchement du pic : les interruptions du process interviendront toutes les 0.2s
+        ITimer 0.2, timeint; 
 
         ConfJ \Off;
         ConfL \Off;
-        MoveAbsJ Targ0,MySpeed,z1,Tool0; ! Initialisation : le robot va au point de dÃ©part de la trajectoire
+		
+        MoveAbsJ Targ0,MySpeed,z1,Tool0; ! Initialisation : le robot va au point de depart de la trajectoire
         
-        TPWrite "Starting routine."; !On affiche la corrction rÃ©alisÃ©e [A tester]
-        ClkStart timer;
+        TPWrite "Starting routine."; !Test de declenchement du process
+		
+        ClkStart timer;	!Top horloge
 
-        MoveL Targ1,MySpeed,Fine,Tool0\WObj:=WObj0\Corr;
-        MoveL Targ2,MySpeed,Fine,Tool0\WObj:=WObj0\Corr;
-        MoveL Targ3,MySpeed,Fine,Tool0\WObj:=WObj0\Corr;
-        MoveL Targ4,MySpeed,Fine,Tool0\WObj:=WObj0\Corr;
-        MoveL Targ5,MySpeed,Fine,Tool0\WObj:=WObj0\Corr;
-        MoveL Targ6,MySpeed,Fine,Tool0\WObj:=WObj0\Corr;
-        MoveL Targ7,MySpeed,Fine,Tool0\WObj:=WObj0\Corr;
-        MoveL Targ8,MySpeed,Fine,Tool0\WObj:=WObj0\Corr;
-        MoveL Targ9,MySpeed,Fine,Tool0\WObj:=WObj0\Corr;
-        MoveL Targ10,MySpeed,Fine,Tool0\WObj:=WObj0\Corr;
-        MoveL Targ11,MySpeed,Fine,Tool0\WObj:=WObj0\Corr;
-        MoveL Targ12,MySpeed,Fine,Tool0\WObj:=WObj0\Corr;
-        MoveL Targ13,MySpeed,Fine,Tool0\WObj:=WObj0\Corr;
-        MoveL Targ14,MySpeed,Fine,Tool0\WObj:=WObj0\Corr;
-        MoveL Targ15,MySpeed,Fine,Tool0\WObj:=WObj0\Corr;
-        MoveL Targ16,MySpeed,Fine,Tool0\WObj:=WObj0\Corr;
-        MoveL Targ17,MySpeed,Fine,Tool0\WObj:=WObj0\Corr;
-        MoveL Targ18,MySpeed,Fine,Tool0\WObj:=WObj0\Corr;
-        MoveL Targ19,MySpeed,Fine,Tool0\WObj:=WObj0\Corr;
-        MoveL Targ20,MySpeed,Fine,Tool0\WObj:=WObj0\Corr;
-        MoveL Targ21,MySpeed,Fine,Tool0\WObj:=WObj0\Corr;
-        MoveL Targ22,MySpeed,Fine,Tool0\WObj:=WObj0\Corr;
-        MoveL Targ23,MySpeed,Fine,Tool0\WObj:=WObj0\Corr;
-        MoveL Targ24,MySpeed,Fine,Tool0\WObj:=WObj0\Corr;
-        MoveL Targ25,MySpeed,Fine,Tool0\WObj:=WObj0\Corr;
-        MoveL Targ26,MySpeed,Fine,Tool0\WObj:=WObj0\Corr;
-        MoveL Targ27,MySpeed,Fine,Tool0\WObj:=WObj0\Corr;
-        MoveL Targ28,MySpeed,Fine,Tool0\WObj:=WObj0\Corr;
-        MoveL Targ29,MySpeed,Fine,Tool0\WObj:=WObj0\Corr;
-        MoveL Targ30,MySpeed,Fine,Tool0\WObj:=WObj0\Corr;
-        MoveL Targ31,MySpeed,Fine,Tool0\WObj:=WObj0\Corr;
-        MoveL Targ32,MySpeed,Fine,Tool0\WObj:=WObj0\Corr;
-        MoveL Targ33,MySpeed,Fine,Tool0\WObj:=WObj0\Corr;
-        MoveL Targ34,MySpeed,Fine,Tool0\WObj:=WObj0\Corr;
-        MoveL Targ35,MySpeed,Fine,Tool0\WObj:=WObj0\Corr;
-        MoveL Targ36,MySpeed,Fine,Tool0\WObj:=WObj0\Corr;
-        MoveL Targ37,MySpeed,Fine,Tool0\WObj:=WObj0\Corr;
-        MoveL Targ38,MySpeed,Fine,Tool0\WObj:=WObj0\Corr;
-        MoveL Targ39,MySpeed,Fine,Tool0\WObj:=WObj0\Corr;
-        MoveL Targ40,MySpeed,Fine,Tool0\WObj:=WObj0\Corr;
-        MoveL Targ41,MySpeed,Fine,Tool0\WObj:=WObj0\Corr;
-        MoveL Targ42,MySpeed,Fine,Tool0\WObj:=WObj0\Corr;
-        MoveL Targ43,MySpeed,Fine,Tool0\WObj:=WObj0\Corr;
-        MoveL Targ44,MySpeed,Fine,Tool0\WObj:=WObj0\Corr;
-        MoveL Targ45,MySpeed,Fine,Tool0\WObj:=WObj0\Corr;
-        MoveL Targ46,MySpeed,Fine,Tool0\WObj:=WObj0\Corr;
-        MoveL Targ47,MySpeed,Fine,Tool0\WObj:=WObj0\Corr;
-        MoveL Targ48,MySpeed,Fine,Tool0\WObj:=WObj0\Corr;
-        MoveL Targ49,MySpeed,Fine,Tool0\WObj:=WObj0\Corr;
-        MoveL Targ50,MySpeed,Fine,Tool0\WObj:=WObj0\Corr;
-        MoveL Targ51,MySpeed,Fine,Tool0\WObj:=WObj0\Corr;
-        MoveL Targ52,MySpeed,Fine,Tool0\WObj:=WObj0\Corr;
+        MoveL Targ1,MySpeed,z1,Tool0\WObj:=WObj0\Corr;
+        MoveL Targ2,MySpeed,z1,Tool0\WObj:=WObj0\Corr;
+        MoveL Targ3,MySpeed,z1,Tool0\WObj:=WObj0\Corr;
+        MoveL Targ4,MySpeed,z1,Tool0\WObj:=WObj0\Corr;
+        MoveL Targ5,MySpeed,z1,Tool0\WObj:=WObj0\Corr;
+        MoveL Targ6,MySpeed,z1,Tool0\WObj:=WObj0\Corr;
+        MoveL Targ7,MySpeed,z1,Tool0\WObj:=WObj0\Corr;
+        MoveL Targ8,MySpeed,z1,Tool0\WObj:=WObj0\Corr;
+        MoveL Targ9,MySpeed,z1,Tool0\WObj:=WObj0\Corr;
+        MoveL Targ10,MySpeed,z1,Tool0\WObj:=WObj0\Corr;
+        MoveL Targ11,MySpeed,z1,Tool0\WObj:=WObj0\Corr;
+        MoveL Targ12,MySpeed,z1,Tool0\WObj:=WObj0\Corr;
+        MoveL Targ13,MySpeed,z1,Tool0\WObj:=WObj0\Corr;
+        MoveL Targ14,MySpeed,z1,Tool0\WObj:=WObj0\Corr;
+        MoveL Targ15,MySpeed,z1,Tool0\WObj:=WObj0\Corr;
+        MoveL Targ16,MySpeed,z1,Tool0\WObj:=WObj0\Corr;
+        MoveL Targ17,MySpeed,z1,Tool0\WObj:=WObj0\Corr;
+        MoveL Targ18,MySpeed,z1,Tool0\WObj:=WObj0\Corr;
+        MoveL Targ19,MySpeed,z1,Tool0\WObj:=WObj0\Corr;
+        MoveL Targ20,MySpeed,z1,Tool0\WObj:=WObj0\Corr;
+        MoveL Targ21,MySpeed,z1,Tool0\WObj:=WObj0\Corr;
+        MoveL Targ22,MySpeed,z1,Tool0\WObj:=WObj0\Corr;
+        MoveL Targ23,MySpeed,z1,Tool0\WObj:=WObj0\Corr;
+        MoveL Targ24,MySpeed,z1,Tool0\WObj:=WObj0\Corr;
+        MoveL Targ25,MySpeed,z1,Tool0\WObj:=WObj0\Corr;
+        MoveL Targ26,MySpeed,z1,Tool0\WObj:=WObj0\Corr;
+        MoveL Targ27,MySpeed,z1,Tool0\WObj:=WObj0\Corr;
+        MoveL Targ28,MySpeed,z1,Tool0\WObj:=WObj0\Corr;
+        MoveL Targ29,MySpeed,z1,Tool0\WObj:=WObj0\Corr;
+        MoveL Targ30,MySpeed,z1,Tool0\WObj:=WObj0\Corr;
+        MoveL Targ31,MySpeed,z1,Tool0\WObj:=WObj0\Corr;
+        MoveL Targ32,MySpeed,z1,Tool0\WObj:=WObj0\Corr;
+        MoveL Targ33,MySpeed,z1,Tool0\WObj:=WObj0\Corr;
+        MoveL Targ34,MySpeed,z1,Tool0\WObj:=WObj0\Corr;
+        MoveL Targ35,MySpeed,z1,Tool0\WObj:=WObj0\Corr;
+        MoveL Targ36,MySpeed,z1,Tool0\WObj:=WObj0\Corr;
+        MoveL Targ37,MySpeed,z1,Tool0\WObj:=WObj0\Corr;
+        MoveL Targ38,MySpeed,z1,Tool0\WObj:=WObj0\Corr;
+        MoveL Targ39,MySpeed,z1,Tool0\WObj:=WObj0\Corr;
+        MoveL Targ40,MySpeed,z1,Tool0\WObj:=WObj0\Corr;
+        MoveL Targ41,MySpeed,z1,Tool0\WObj:=WObj0\Corr;
+        MoveL Targ42,MySpeed,z1,Tool0\WObj:=WObj0\Corr;
+        MoveL Targ43,MySpeed,z1,Tool0\WObj:=WObj0\Corr;
+        MoveL Targ44,MySpeed,z1,Tool0\WObj:=WObj0\Corr;
+        MoveL Targ45,MySpeed,z1,Tool0\WObj:=WObj0\Corr;
+        MoveL Targ46,MySpeed,z1,Tool0\WObj:=WObj0\Corr;
+        MoveL Targ47,MySpeed,z1,Tool0\WObj:=WObj0\Corr;
+        MoveL Targ48,MySpeed,z1,Tool0\WObj:=WObj0\Corr;
+        MoveL Targ49,MySpeed,z1,Tool0\WObj:=WObj0\Corr;
+        MoveL Targ50,MySpeed,z1,Tool0\WObj:=WObj0\Corr;
+        MoveL Targ51,MySpeed,z1,Tool0\WObj:=WObj0\Corr;
+        MoveL Targ52,MySpeed,z1,Tool0\WObj:=WObj0\Corr;
         MoveL Targ53,MySpeed,Fine,Tool0\WObj:=WObj0\Corr;
 
-        MoveAbsJ Targ0,MySpeed,Fine,Tool0; !On revient au point de dÃ©part
-
+        MoveAbsJ Targ0,MySpeed,z1,Tool0; !Retour au point de depart
+		
+		TPWrite "Stop routine."; !Test de fin du process
         CorrClear;
-        TPWrite "Stop routine."; !On affiche la corrction rÃ©alisÃ©e [A tester]
         ClkReset timer;
 
     ENDPROC
