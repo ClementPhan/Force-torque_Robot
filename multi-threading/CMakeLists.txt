@@ -8,5 +8,5 @@ include_directories(${EIGEN_INC_DIR})
 
 project(kalman)
 
-set(SOURCE_FILES kalman.cpp kalman_test.cpp)
-add_executable(kalman_test ${SOURCE_FILES})
+set(SOURCE_FILES kalman.cpp main.cpp)
+add_executable(main ${SOURCE_FILES})
