@@ -36,3 +36,7 @@ Makefile
 
 #VisualStudio project files
 .vs/
+
+#XCode buid and debug files
+*.build/
+*.xcodeproj/
