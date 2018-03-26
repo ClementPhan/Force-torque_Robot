@@ -12,7 +12,7 @@ using namespace std;
 
 #include "kalman.hpp"
 
-int initKalman() {
+void initKalman() {
     
     int n = 6; // Nombre d'états: 3 déplacements et 3 vitesses
     int m = 3; // Nombre de mesures: les forces mesurées dans les trois directions par le capteur (repère de la surface)
