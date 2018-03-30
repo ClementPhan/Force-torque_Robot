@@ -40,46 +40,33 @@ void FT_Client::sendActionPackets()
 
 void FT_Client::update(double donnees_capteur[6])
 {
-	Packet packet;
-	int data_length = network->receivePackets(network_data);
+	const int command_length = 20;						/* Commands are always 20 bytes */
+	char FT_get_command[command_length] = { 0 };	/* ReadFT is 0 followed by 19 zeros */
 
-	if (data_length <= 0)
+	const int response_length = 16; /* Response length is specified to be 16 bytes long */
+	char FT_get_response[response_length];
+
+	int real_response_length = 0;
+
+	while (real_response_length != response_length)
 	{
-		//no data recieved
-		return;
+		NetworkServices::sendMessage(network->ConnectSocket, FT_get_command, command_length);
+
+		real_response_length = NetworkServices::receiveMessage(network->ConnectSocket, FT_get_response, response_length);
 	}
-
-	int i = 0;
-	while (i < (unsigned int)data_length)
+	for (int i = 0; i++; i < 6)
 	{
-		packet.deserialize(&(network_data[i]));
-		i += sizeof(Packet);
-
-		switch (packet.packet_type) {
-
-		case ACTION_EVENT:
-
-			printf("client received action event packet from server\n");
-
-			sendActionPackets();
-
-			break;
-
-		default:
-
-			printf("error in packet types\n");
-
-			break;
-		}
+		donnees_capteur[i] = ntohs(*(unsigned __int16 *)&FT_get_response[2*i]);
 	}
 }
 
 void FT_Client::get_config()
 {
 	const int command_length = 20 ;						/* Commands are always 20 bytes */
-	char config_get_command[command_length] = { 1 };	/* readConfig is 1 followed by 19 zeros */
+	char config_get_command[command_length] = { 0 };	/* readConfig is 1 followed by 19 zeros */
+	config_get_command[command_length -1] = 0x1;
 
-	const int response_length = 16 ; /* Respose length is specified to be 24 bytes long */
+	const int response_length = 16 ; /* Response length is specified to be 24 bytes long */
 	char config_get_response[response_length];
 
 	int real_response_length = 0;
@@ -91,7 +78,30 @@ void FT_Client::get_config()
 		real_response_length = NetworkServices::receiveMessage(network->ConnectSocket, config_get_response, response_length);
 	}
 
-	unsigned char temp[16];
+	unsigned __int16 plop1,	plop2, plop3, plop4, plop5, plop6, plop7, plop8;
+
+	plop1 = ntohs(*(unsigned __int16 *)&config_get_response[0]);
+	plop2 = ntohs(*(unsigned __int16 *)&config_get_response[2]);
+	plop3 = ntohs(*(unsigned __int16 *)&config_get_response[4]);
+	plop4 = ntohs(*(unsigned __int16 *)&config_get_response[6]);
+	plop5 = ntohs(*(unsigned __int16 *)&config_get_response[8]);
+	plop6 = ntohs(*(unsigned __int16 *)&config_get_response[10]);
+	plop7 = ntohs(*(unsigned __int16 *)&config_get_response[12]);
+	plop8 = ntohs(*(unsigned __int16 *)&config_get_response[14]);
+
+	printf("plop1 = %#x\n\n", plop1);
+	printf("plop2 = %#x\n\n", plop2);
+	printf("plop3 = %#x\n\n", plop3);
+	printf("plop4 = %#x\n\n", plop4);
+	printf("plop5 = %#x\n\n", plop5);
+	printf("plop6 = %#x\n\n", plop6);
+	printf("plop7 = %#x\n\n", plop7);
+	printf("plop8 = %#x\n\n", plop8);
+	
+
+
+	
+	unsigned char temp[16]; 
 	std::memcpy(temp, config_get_response, 16);
 	printf("Header\n");
 	printf("%#x", temp[0]);
