@@ -14,7 +14,7 @@ void runLoop2(KalmanFilter a){
     
 }
 
-int main(int argc, char* argv[]) {
+int main(int argc, char ** argv) {
 
     double dt = 1.0/30.0;
     
@@ -29,7 +29,7 @@ int main(int argc, char* argv[]) {
     
 
     thread Kalman(&MultiThreading::runKalman , &global, Kf);
-    thread getInfo(&MultiThreading::acquireData, &global);
+    thread getInfo(&MultiThreading::acquireData, &global, argc, argv);
     thread sendInfo(&MultiThreading::sendData, &global);
     
     

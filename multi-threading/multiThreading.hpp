@@ -44,11 +44,11 @@ public:
     void setRotation(Eigen::VectorXd rot);
     void setMesures(Eigen::VectorXd y);
     void setDisplacement(Eigen::VectorXd x);
-    void setObj(Eigen::VectorXd Fobj);
+    void setObjective(Eigen::VectorXd Fobj);
 
-    //function used
+    //loop functions
     void runKalman(KalmanFilter Kf);
-    void acquireData();
+    void acquireData(int argc, char ** argv);
     void sendData();
 };
 

@@ -17,33 +17,16 @@ using namespace std;
 MultiThreading::MultiThreading(){
     int m = 6;
     int n = 6;
-    /*Eigen::VectorXd rot(3);
-    Eigen::VectorXd Fobj(6);
-    Eigen::VectorXd y(m);
-    Eigen::VectorXd x(n);*/
-    
-    /*cout << "rot" << rot << endl;
-    cout << "y" << y << endl;
-    cout << "x" << x << endl;*/
-    
-    /*rotation = rot;
-    objective = Fobj;
-    mesures = y;
-    displacement = x;*/
-    
     Eigen::VectorXd rot(3);
     Eigen::VectorXd Fobj(6);
-    Eigen::VectorXd y(6);
-    Eigen::VectorXd x(6);
-    rot << 0, 0, 0;
-    Fobj << 0,0,0,0,0,0;
-    y << 0,0,0,0,0,0;
-    x << 0,0,0,0,0,0;
+    Eigen::VectorXd y(m);
+    Eigen::VectorXd x(n);
     
     rotation = rot;
+    objective = Fobj;
     mesures = y;
     displacement = x;
-    objective = Fobj;
+    
 }
 
 MultiThreading::MultiThreading(Eigen::VectorXd rot, Eigen::VectorXd y, Eigen::VectorXd x){
@@ -89,12 +72,12 @@ void MultiThreading::runKalman(KalmanFilter Kf){
     }
 }
 
-void MultiThreading::acquireData(){
+void MultiThreading::acquireData(int argc, char ** argv ){
     int i =0;
     while(true){
         m.lock();
         i +=1;
-        acquisitionScript();
+        acquisitionScript(argc, argv);
         cout << "Acquisition " << i << endl;
         m.unlock();
     }
