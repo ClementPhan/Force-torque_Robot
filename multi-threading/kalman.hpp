@@ -10,6 +10,9 @@
  */
 
 #include <Eigen/Dense>
+#include <mutex>
+
+using namespace std;
 
 #pragma once
 
@@ -50,11 +53,13 @@ public:
 
     /* Update the estimated state based on measured values. The
         time step is assumed to remain constant.*/
-    void update(const Eigen::VectorXd& y, const Eigen::VectorXd& Fobj, const Eigen::VectorXd& rot);
+    Eigen::VectorXd update(Eigen::VectorXd y, Eigen::VectorXd Fobj, Eigen::VectorXd rot);
     
     // Return the current state or time.
     Eigen::VectorXd getState() { return x_hat; };
     double getTime() { return t; };
+    
+    void random(mutex m);
 
 private:
     

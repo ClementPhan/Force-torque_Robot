@@ -5,8 +5,8 @@
 //  Created by Sarah Curtit on 23/03/2018.
 //
 
-#include "envoi.hpp"
+#include "sending.hpp"
 
-void scriptEnvoi(){
+void sendingScript(){
     
 }

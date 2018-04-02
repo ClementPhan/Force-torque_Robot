@@ -12,6 +12,6 @@
 
 #include <stdio.h>
 
-void scriptAcquisition();
+void acquisitionScript();
 
 #endif /* acquisition_hpp */

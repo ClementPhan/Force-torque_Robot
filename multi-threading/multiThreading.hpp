@@ -8,37 +8,47 @@
 #include <Eigen/Dense>
 #include <mutex>
 
+#include "kalman.hpp"
+#include "acquisition.hpp"
+#include "sending.hpp"
+
 using namespace std;
 
 #pragma once
 
 class MultiThreading{
+private:
     
-    public:
+//shared variables
+Eigen::VectorXd rotation;
+Eigen::VectorXd mesures;
+Eigen::VectorXd displacement;
+Eigen::VectorXd objective;
+mutex m;
     
-        // Constructor
-        MultiThreading(Eigen::VectorXd rot, Eigen::VectorXd y, Eigen::VectorXd x);
-    
-        //Create blank estimator
-        MultiThreading();
-    
-        // Accessors
-        Eigen::VectorXd getRotation();
-        Eigen::VectorXd getMesures();
-        Eigen::VectorXd getDisplacement();
-    
-        // Modifiers
-        void setRotation(Eigen::VectorXd rot);
-        void setMesures(Eigen::VectorXd y);
-        void setDisplacement(Eigen::VectorXd x);
+public:
 
-    private:
-    
-        //shared variables
-        Eigen::VectorXd rotation;
-        Eigen::VectorXd mesures;
-        Eigen::VectorXd displacement;
-        mutex acquisition;
-        mutex posting;
+    // Constructor
+    MultiThreading(Eigen::VectorXd rot, Eigen::VectorXd y, Eigen::VectorXd x);
+
+    //Create blank estimator
+    MultiThreading();
+
+    // Accessors
+    Eigen::VectorXd getRotation();
+    Eigen::VectorXd getMesures();
+    Eigen::VectorXd getDisplacement();
+    Eigen::VectorXd getObjective();
+
+    // Modifiers
+    void setRotation(Eigen::VectorXd rot);
+    void setMesures(Eigen::VectorXd y);
+    void setDisplacement(Eigen::VectorXd x);
+    void setObj(Eigen::VectorXd Fobj);
+
+    //function used
+    void runKalman(KalmanFilter Kf);
+    void acquireData();
+    void sendData();
 };
 

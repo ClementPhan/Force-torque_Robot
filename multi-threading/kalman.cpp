@@ -47,24 +47,27 @@ void KalmanFilter::init() {
   initialized = true;
 }
 
-void KalmanFilter::update(const Eigen::VectorXd& y, const Eigen::VectorXd& Fobj, const Eigen::VectorXd& rot) {
+Eigen::VectorXd KalmanFilter::update(Eigen::VectorXd y, Eigen::VectorXd Fobj, Eigen::VectorXd rot) {
 
-  double alpha;
-  Eigen::VectorXd ySurf = y;
+  //double alpha;
+  /*Eigen::VectorXd ySurf = y;
   ySurf(2) += y(4)*sin(alpha)*L;
-  Eigen::VectorXd  dy = Fobj -ySurf;
+  Eigen::VectorXd  dy = Fobj -ySurf;*/
+  Eigen::VectorXd  dy = Fobj - y;
     
   if(!initialized)
     throw std::runtime_error("Filter is not initialized!");
 
   x_hat_new = A * x_hat; //prédiction de l'état à t+1 x(k+1|k). u nul !
   P = A*P*A.transpose() + W; // 2.24 prédiction de l'erreur à t+1 P(k+1|k)
-  K = P*C.transpose()*(C*P*C.transpose() + V*dy).inverse(); // e W 2.27 donne K(t+1)
+  K = P*C.transpose()*(C*P*C.transpose() + V).inverse(); // e W 2.27 donne K(t+1)
   x_hat_new += K * (dy - C*x_hat_new); // x(k+1|k+1) état estimé à t+1 //idem u nul !
   P = (I - K*C)*P; // P(k+1|k+1) on calcule l'erreur d'estimation
   x_hat = x_hat_new;
 
   t += dt;
+    
+  return x_hat;
 }
 
 
@@ -141,11 +144,11 @@ KalmanFilter KalmanFilter::setRobotKalman(double stepTime){
     // Calcul de P: AP + PAt -Pctv-1Cp +MWMt = 0
     P = W;
     
-    cout << "A: \n" << A << endl;
+    /*cout << "A: \n" << A << endl;
     cout << "B: \n" << C << endl;
     cout << " W: \n" <<  W << endl;
     cout << "R: \n" << V  << endl;
-    cout << "P: \n" << P << endl;
+    cout << "P: \n" << P << endl;*/
     
     // Construct the filter
     KalmanFilter kf(dt, L, A, C, W, V, P);

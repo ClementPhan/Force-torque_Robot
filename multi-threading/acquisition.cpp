@@ -7,7 +7,12 @@
 
 #include "acquisition.hpp"
 
+#include <iostream>
+#include <mutex>
 
-void scriptAcquisition(){
-    
+using namespace std;
+
+
+void acquisitionScript(){
+
 }
