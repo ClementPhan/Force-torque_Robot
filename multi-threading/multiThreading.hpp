@@ -48,7 +48,7 @@ public:
 
     //loop functions
     void runKalman(KalmanFilter Kf);
-    void acquireData(int argc, char ** argv);
+    void acquireData();
     void sendData();
 };
 
