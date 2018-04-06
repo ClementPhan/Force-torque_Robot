@@ -1,5 +1,5 @@
 //#include "StdAfx.h"
-#include "NetworkServices.h"
+#include "../tcp_client/NetworkServices.hpp"
 
 int NetworkServices::sendMessage(SOCKET curSocket, char * message, int messageSize)
 {

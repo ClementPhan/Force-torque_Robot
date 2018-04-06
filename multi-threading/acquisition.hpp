@@ -24,6 +24,13 @@
 #include <iomanip>
 #include <string>
 
+#include "../tcp_client/ClientNetwork.hpp"
+#include "../tcp_client/FT_Client.hpp"
+#include "../tcp_client/FT_config.hpp"
+#include "../tcp_client/NetworkServices.hpp"
+#include "../tcp_client/NetworkData.hpp"
+
+
 typedef unsigned int uint32;
 typedef int int32;
 typedef unsigned short uint16;
