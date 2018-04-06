@@ -78,14 +78,23 @@ void MultiThreading::runKalman(KalmanFilter Kf){
     }
 }
 
-void MultiThreading::acquireData(int argc, char ** argv ){
-    int i =0;
+void MultiThreading::acquireData( ){
+    
+	FT_Client* client_capteur;
+	client_capteur = new FT_Client();
+
+	double donnees_capteur[6] = { 0, 0, 0, 0, 0, 0 };
+
+	client_capteur->get_config();
     while(true){
-        m.lock();
+        
         i +=1;
-        acquisitionScript(argc, argv);
+		client_capteur->update(donnees_capteur);
         cout << "Acquisition " << i << endl;
-        m.unlock();
+        
+		m.lock();
+		y << donnees_capteur[0], donnees_capteur[1], donnees_capteur[2], donnees_capteur[3], donnees_capteur[4], donnees_capteur[5];
+		m.unlock();
     }
 }
 
