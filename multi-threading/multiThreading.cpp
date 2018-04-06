@@ -49,15 +49,21 @@ Eigen::VectorXd MultiThreading::getDisplacement(){
 }
 
 void MultiThreading::setRotation(Eigen::VectorXd rot){
+    m.lock();
     rotation = rot;
+    m.unlock();
 }
 
 void MultiThreading::setMesures(Eigen::VectorXd y){
+    m.lock();
     mesures = y;
+    m.unlock();
 }
 
 void MultiThreading::setDisplacement(Eigen::VectorXd x){
+    m.lock();
     displacement = x;
+    m.unlock();
 }
 
 void MultiThreading::runKalman(KalmanFilter Kf){
