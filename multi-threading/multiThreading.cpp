@@ -38,51 +38,43 @@ MultiThreading::MultiThreading(Eigen::VectorXd rot, Eigen::VectorXd y, Eigen::Ve
 
 
 Eigen::VectorXd MultiThreading::getRotation(){
-    m.lock();
+	std::lock_guard<std::mutex> guard(m);
     return rotation;
-    m.unlock();
 }
 
 Eigen::VectorXd MultiThreading::getMesures(){
-    m.lock();
+	std::lock_guard<std::mutex> guard(m);
     return mesures;
-    m.unlock();
 }
 
 Eigen::VectorXd MultiThreading::getDisplacement(){
-    m.lock();
+	std::lock_guard<std::mutex> guard(m);
     return displacement;
-    m.unlock();
 }
 
 Eigen::VectorXd MultiThreading::getObjective(){
-    m.lock();
+	std::lock_guard<std::mutex> guard(m);
     return objective;
-    m.unlock();
 }
 
 void MultiThreading::setRotation(Eigen::VectorXd rot){
-    m.lock();
+	std::lock_guard<std::mutex> guard(m);
     rotation = rot;
-    m.unlock();
 }
 
 void MultiThreading::setMesures(Eigen::VectorXd y){
-    m.lock();
+	std::lock_guard<std::mutex> guard(m);
     mesures = y;
-    m.unlock();
 }
 
 void MultiThreading::setDisplacement(Eigen::VectorXd x){
-    m.lock();
+	std::lock_guard<std::mutex> guard(m);
     displacement = x;
-    m.unlock();
 }
 
-Eigen::VectorXd MultiThreading::setObjective(Eigen::VectorXd x){
-    m.lock();
+Eigen::VectorXd MultiThreading::setObjective(Eigen::VectorXd Fobj){
+	std::lock_guard<std::mutex> guard(m);
     return objective;
-    m.unlock();
 }
 
 void MultiThreading::runKalman(KalmanFilter Kf){
