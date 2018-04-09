@@ -38,27 +38,51 @@ MultiThreading::MultiThreading(Eigen::VectorXd rot, Eigen::VectorXd y, Eigen::Ve
 
 
 Eigen::VectorXd MultiThreading::getRotation(){
+    m.lock();
     return rotation;
+    m.unlock();
 }
 
 Eigen::VectorXd MultiThreading::getMesures(){
+    m.lock();
     return mesures;
+    m.unlock();
 }
 
 Eigen::VectorXd MultiThreading::getDisplacement(){
+    m.lock();
     return displacement;
+    m.unlock();
+}
+
+Eigen::VectorXd MultiThreading::getObjective(){
+    m.lock();
+    return objective;
+    m.unlock();
 }
 
 void MultiThreading::setRotation(Eigen::VectorXd rot){
+    m.lock();
     rotation = rot;
+    m.unlock();
 }
 
 void MultiThreading::setMesures(Eigen::VectorXd y){
+    m.lock();
     mesures = y;
+    m.unlock();
 }
 
 void MultiThreading::setDisplacement(Eigen::VectorXd x){
+    m.lock();
     displacement = x;
+    m.unlock();
+}
+
+Eigen::VectorXd MultiThreading::setObjective(Eigen::VectorXd x){
+    m.lock();
+    return objective;
+    m.unlock();
 }
 
 void MultiThreading::runKalman(KalmanFilter Kf){
