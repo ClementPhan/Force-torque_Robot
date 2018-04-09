@@ -54,12 +54,12 @@ void FT_Client::update(double donnees_capteur[6])
 
 		real_response_length = NetworkServices::receiveMessage(network->ConnectSocket, FT_get_response, response_length);
 	}
-	for (int i = 0; i++; i < 6)
+	for (int i = 0; i < 6; i++)
 	{
 		donnees_capteur[i] = ntohs(*(unsigned __int16 *)&FT_get_response[2*i]);
 	}
 
-	for (int i = 0; i++; i < 3)
+	for (int i = 0; i < 3; i++)
 	{
 		donnees_capteur[i] = donnees_capteur[i] * ft_config.scaleFactors[i] / ft_config.countsPerForce;
 		donnees_capteur[i+3] = donnees_capteur[i+3] * ft_config.scaleFactors[i+3] / ft_config.countsPerTorque;

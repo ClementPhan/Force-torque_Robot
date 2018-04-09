@@ -9,8 +9,8 @@
 #include <mutex>
 
 #include "kalman.hpp"
-#include "acquisition.hpp"
 #include "sending.hpp"
+#include "../tcp_client/FT_Client.hpp"
 
 using namespace std;
 

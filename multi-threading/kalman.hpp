@@ -46,6 +46,8 @@ public:
     
     // Initialize the filter with initial states as zero.
     void init();
+
+	
     
     // Initialize the filter with a guess for initial states.
     void init(double t0, const Eigen::VectorXd& x0);
@@ -53,8 +55,7 @@ public:
 
     /* Update the estimated state based on measured values. The
         time step is assumed to remain constant.*/
-    Eigen::VectorXd update(Eigen::VectorXd y, Eigen::VectorXd Fobj, Eigen::VectorXd rot);
-    
+    void update(Eigen::VectorXd & displacement, Eigen::VectorXd y, Eigen::VectorXd Fobj, Eigen::VectorXd rot, mutex & m);
     // Return the current state or time.
     Eigen::VectorXd getState() { return x_hat; };
     double getTime() { return t; };
