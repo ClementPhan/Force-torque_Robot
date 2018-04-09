@@ -72,9 +72,9 @@ void MultiThreading::setDisplacement(Eigen::VectorXd x){
     displacement = x;
 }
 
-Eigen::VectorXd MultiThreading::setObjective(Eigen::VectorXd Fobj){
+void MultiThreading::setObjective(Eigen::VectorXd Fobj){
 	std::lock_guard<std::mutex> guard(m);
-    return objective;
+    objective= Fobj;
 }
 
 void MultiThreading::runKalman(KalmanFilter Kf){
