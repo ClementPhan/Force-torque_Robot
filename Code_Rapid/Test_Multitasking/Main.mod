@@ -1,24 +1,38 @@
-MODULE Main
+MODULE Tache_Principale
     !***********************************************************
     !
-    ! Module: Main
+    ! Module: Tache_Principale
     !
-    ! Description : Code test avec correction en Z : le robot suit une trajectoire donnee et au bout d'une durée TAU il effectue un pic d'offset
-	! offset2 calculé dans Clock_test
+    ! Description : Correction en Z avec multitasking -> La correction appliquée dans la tâche principale est calculée dans la tâche serveur et est communiquée via RMQ [Interrupt].
     !
     ! Auteur : Nahkriin
     !
     ! Version : 1.0
     !
     !***********************************************************
-	
-    VAR intnum timeint := 10;	!ID de la routine
+
+
+	VAR intnum rmqint; ! ID de la routine RMQ
 
     VAR corrdescr z_id; !Variables de correction
     VAR pos write_offset;
     VAR pos total_offset;
-    
-    PERS num offset2;   ! Valeur de la correction calculée dans Clock_Test
+
+	VAR num offset;
+
+	VAR rmqheader rmqheader1;   !Variables message RMQ
+	VAR rmqslot rmqslot1;
+	VAR rmqmessage rmqmessage1;
+
+    VAR string msg1;    !Data du message RMQ
+
+    PERS bool flag; !Booleen de declenchement de la correction
+
+    VAR bool flag1;
+
+    PERS tasks task_list{2} := [["Serveur"], ["T_ROB1"]];   !Varibales de stnchronisation des tasks
+    VAR syncident sync1;
+    VAR syncident sync2;
 
     ! =============DECLARATIONS============
     VAR speeddata MySpeed:=[100,100,5000,1000];
@@ -79,33 +93,58 @@ MODULE Main
     CONST robtarget Targ52:=[[418.38,-279.55,0],[0,0.2903,0.9569,0],[-1,0,0,0],[0,9E+09,9E+09,9E+09,9E+09,9E+09]];
     CONST robtarget Targ53:=[[418.38,-290.33,0],[0,0.2987,0.9543,0],[-1,0,-1,0],[0,9E+09,9E+09,9E+09,9E+09,9E+09]];
 
-    CONST jointtarget Targ54:=[[-35.74,90.77,-21.87,0,21.09,0],[0,9E+09,9E+09,9E+09,9E+09,9E+09]];    
+    CONST jointtarget Targ54:=[[-35.74,90.77,-21.87,0,21.09,0],[0,9E+09,9E+09,9E+09,9E+09,9E+09]];
 
-! Routine de correction
+!Routine de reception RMQ et correction
 
-    TRAP routine3
-        
-        TPWrite "On corrige"\Num:=offset2;
-        
+	TRAP routine
+
+        !Partie reception
+
+    	RMQGetMessage rmqmessage1;  !Reception du message RMQ
+    	RMQGetMsgHeader rmqmessage1 \Header:=rmqheader1 \SenderId:=rmqslot1;    !Recuperation des informations
+
+    	IF rmqheader1.datatype = "string" AND rmqheader1.ndim = 0 THEN
+
+    		RMQGetMsgData rmqmessage1, msg1;    !Recuperation des donnees
+            flag1 := StrToVal(msg1, offset);    !Conversion des donnees
+
+    	ELSE
+
+    		TPWrite "Message RMQ non valide";
+
+        ENDIF
+
+        !Partie correction
+
         write_offset.x := 0;
         write_offset.y := 0;
-        write_offset.z := offset2;
-			
-        CorrWrite z_id, write_offset;	
-    ENDTRAP
+        write_offset.z := offset;
+
+        TPWrite "On corrige"\Num:=offset;
+        CorrWrite z_id, write_offset;
+
+        RMQEmptyQueue;
+
+	ENDTRAP
+
 
     PROC main()
 
         CorrCon z_id;	!Connection du correcteur
 
-        CONNECT timeint WITH routine3;
-        ITimer 0.2, timeint;
+		CONNECT rmqint WITH routine;    !Connection a la routine de correction
+		IRMQMessage msg1, rmqint;
+
+        RMQEmptyQueue;  !Vidage de la queue RMQ
 
         ConfJ \Off;
         ConfL \Off;
-		
+
         MoveAbsJ Targ0,MySpeed,z1,Tool0; ! Initialisation : le robot va au point de depart de la trajectoire
-        
+
+        WaitSyncTask sync1, task_list;  !Synchronisation des deux tâches
+
         TPWrite "Starting routine."; !Test de declenchement du process
 
         MoveL Targ1,MySpeed,z1,Tool0\WObj:=WObj0\Corr;
@@ -162,11 +201,11 @@ MODULE Main
         MoveL Targ52,MySpeed,z1,Tool0\WObj:=WObj0\Corr;
         MoveL Targ53,MySpeed,Fine,Tool0\WObj:=WObj0\Corr;
 
-        MoveAbsJ Targ0,MySpeed,z1,Tool0; !Retour au point de depart
-		
-		TPWrite "Stop routine."; !Test de fin du process
-        IDelete timeint;
+        TPWrite "Stop routine."; !Test de fin du process
+        IDelete rmqint;
         CorrClear;
+
+        MoveAbsJ Targ0,MySpeed,z1,Tool0; !Retour au point de depart
 
     ENDPROC
 
