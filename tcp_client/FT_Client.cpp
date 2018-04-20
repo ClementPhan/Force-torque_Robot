@@ -7,17 +7,8 @@ FT_Client::FT_Client(void)
 
 	network = new ClientNetwork();
 
-	// send init packet
-	const unsigned int packet_size = sizeof(Packet);
-	char packet_data[packet_size];
-
-	Packet packet;
-	packet.packet_type = INIT_CONNECTION;
-
-	packet.serialize(packet_data);
-
-	NetworkServices::sendMessage(network->ConnectSocket, packet_data, packet_size);
 }
+
 
 
 FT_Client::~FT_Client(void)
@@ -36,6 +27,22 @@ void FT_Client::sendActionPackets()
 	packet.serialize(packet_data);
 
 	NetworkServices::sendMessage(network->ConnectSocket, packet_data, packet_size);
+}
+
+int FT_Client::startStream()
+{
+	char* message[8] = {0};
+	*(unsigned __int16*)&message[0] = htons(0x1234); /* standard header. */
+	*(unsigned __int16*)&message[2] = htons(0x0002); /* per table 9.1 in Net F/T user manual : start stream */
+	*(unsigned __int32*)&message[4] = htonl(0); /* see section 9.1 in Net F/T user manual. */
+	return Services::sendMessage(network->ConnectSocket, message, 8);
+}
+
+void FT_Client::updateUDP(double donnees_capteur[6])
+{
+	const int responseLength = 36;
+	char response[responseLength];
+	NetworkServices::receiveMessage(network->ConnectSocket, response, responseLength);
 }
 
 void FT_Client::update(double donnees_capteur[6])

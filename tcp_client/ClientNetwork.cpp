@@ -28,9 +28,11 @@ ClientNetwork::ClientNetwork(void)
     // set address info
     ZeroMemory( &hints, sizeof(hints) );
     hints.ai_family = AF_UNSPEC;
-    hints.ai_socktype = SOCK_STREAM;
-    hints.ai_protocol = IPPROTO_TCP;  //TCP connection!!!
-
+    //hints.ai_socktype = SOCK_STREAM;
+    //hints.ai_protocol = IPPROTO_TCP;  //TCP connection!!!
+	hints.ai_socktype = SOCK_DGRAM; // For UDP
+	hints.ai_protocol = IPPROTO_UDP;  //UDP connection!!!
+	
 	
     //resolve server address and port 
     iResult = getaddrinfo("200.200.200.99", DEFAULT_PORT, &hints, &result);
@@ -56,13 +58,16 @@ ClientNetwork::ClientNetwork(void)
         }
 
         // Connect to server.
-        iResult = connect( ConnectSocket, ptr->ai_addr, (int)ptr->ai_addrlen);
+        //iResult = connect( ConnectSocket, ptr->ai_addr, (int)ptr->ai_addrlen);
+		iResult = bind( ConnectSocket, ptr->ai_addr, (int)ptr->ai_addrlen);
 
-        if (iResult == SOCKET_ERROR)
+        //if (iResult == SOCKET_ERROR)
+		if(iResult !=0) // For UDP
         {
             closesocket(ConnectSocket);
             ConnectSocket = INVALID_SOCKET;
-            printf ("The server is down... did not connect");
+            //printf ("The server is down... did not connect");
+			printf ("Could not bind UDP socket");
         }
     }
 
@@ -81,6 +86,8 @@ ClientNetwork::ClientNetwork(void)
         exit(1);
     }
 
+	
+	/*
 	// Set the mode of the socket to be nonblocking
     u_long iMode = 1;
 
@@ -92,10 +99,7 @@ ClientNetwork::ClientNetwork(void)
         WSACleanup();
         exit(1);        
     }
-
-	//disable nagle
-    char value = 1;
-    setsockopt( ConnectSocket, IPPROTO_TCP, TCP_NODELAY, &value, sizeof( value ) );
+	*/
 }
 
 
@@ -106,6 +110,21 @@ ClientNetwork::~ClientNetwork(void)
 int ClientNetwork::receivePackets(char * recvbuf) 
 {
     iResult = NetworkServices::receiveMessage(ConnectSocket, recvbuf, MAX_PACKET_SIZE);
+
+    if ( iResult == 0 )
+    {
+        printf("Connection closed\n");
+        closesocket(ConnectSocket);
+        WSACleanup();
+        exit(1);
+    }
+
+    return iResult;
+}
+
+int ClientNetwork::sendMessage(char * message, int messageSize) 
+{
+    iResult = NetworkServices::sendMessage(ConnectSocket, message, messageSize);
 
     if ( iResult == 0 )
     {
