@@ -59,7 +59,7 @@ ClientNetwork::ClientNetwork(void)
 
         // Connect to server.
         //iResult = connect( ConnectSocket, ptr->ai_addr, (int)ptr->ai_addrlen);
-		iResult = bind( ConnectSocket, ptr->ai_addr, (int)ptr->ai_addrlen);
+		iResult = connect( ConnectSocket, ptr->ai_addr, (int)ptr->ai_addrlen);
 
         //if (iResult == SOCKET_ERROR)
 		if(iResult !=0) // For UDP

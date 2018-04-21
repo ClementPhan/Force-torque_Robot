@@ -31,11 +31,11 @@ void FT_Client::sendActionPackets()
 
 int FT_Client::startStream()
 {
-	char* message[8] = {0};
+	char message[8] = {0};
 	*(unsigned __int16*)&message[0] = htons(0x1234); /* standard header. */
 	*(unsigned __int16*)&message[2] = htons(0x0002); /* per table 9.1 in Net F/T user manual : start stream */
 	*(unsigned __int32*)&message[4] = htonl(0); /* see section 9.1 in Net F/T user manual. */
-	return Services::sendMessage(network->ConnectSocket, message, 8);
+	return NetworkServices::sendMessage(network->ConnectSocket, message, 8);
 }
 
 void FT_Client::updateUDP(double donnees_capteur[6])

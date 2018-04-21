@@ -11,6 +11,7 @@
 #define DEFAULT_BUFLEN 512
 // port to connect sockets through 
 #define DEFAULT_PORT "49151"
+#define DEFAULT_PORT_UDP "49152"
 // Need to link with Ws2_32.lib, Mswsock.lib, and Advapi32.lib
 #pragma comment (lib, "Ws2_32.lib")
 #pragma comment (lib, "Mswsock.lib")
@@ -32,5 +33,6 @@ public:
     ~ClientNetwork(void);
 
 	int receivePackets(char *);
+	int sendMessage(char * message, int messageSize);
 };
 

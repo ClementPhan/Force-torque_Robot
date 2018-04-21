@@ -20,6 +20,10 @@ public:
 
 	void sendActionPackets();
 
+	int startStream();
+
+	void updateUDP(double donnees_capteur[6]);
+
 	char network_data[MAX_PACKET_SIZE];
 
 	void update(double donnees_capteur[6]);
