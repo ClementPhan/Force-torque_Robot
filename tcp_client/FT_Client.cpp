@@ -5,7 +5,7 @@
 FT_Client::FT_Client(void)
 {
 
-	network = new ClientNetwork();
+	network = new ClientTCP();
 
 }
 
@@ -15,6 +15,7 @@ FT_Client::~FT_Client(void)
 {
 }
 
+/*
 void FT_Client::sendActionPackets()
 {
 	// send action packet
@@ -28,13 +29,14 @@ void FT_Client::sendActionPackets()
 
 	NetworkServices::sendMessage(network->ConnectSocket, packet_data, packet_size);
 }
+*/
 
 int FT_Client::startStream()
 {
 	char message[8] = {0};
 	*(unsigned __int16*)&message[0] = htons(0x1234); /* standard header. */
 	*(unsigned __int16*)&message[2] = htons(0x0002); /* per table 9.1 in Net F/T user manual : start stream */
-	*(unsigned __int32*)&message[4] = htonl(0); /* see section 9.1 in Net F/T user manual. */
+	*(unsigned __int32*)&message[4] = htonl(0); /* see section 9.1 in Net F/T user manual  : 0 is infinite */
 	return NetworkServices::sendMessage(network->ConnectSocket, message, 8);
 }
 
@@ -61,12 +63,12 @@ void FT_Client::update(double donnees_capteur[6])
 
 		real_response_length = NetworkServices::receiveMessage(network->ConnectSocket, FT_get_response, response_length);
 	}
-	for (int i = 0; i++; i < 6)
+	for (int i = 0; i < 6; i++)
 	{
 		donnees_capteur[i] = ntohs(*(unsigned __int16 *)&FT_get_response[2*i]);
 	}
 
-	for (int i = 0; i++; i < 3)
+	for (int i = 0; i < 3; i++)
 	{
 		donnees_capteur[i] = donnees_capteur[i] * ft_config.scaleFactors[i] / ft_config.countsPerForce;
 		donnees_capteur[i+3] = donnees_capteur[i+3] * ft_config.scaleFactors[i+3] / ft_config.countsPerTorque;

@@ -2,8 +2,7 @@
 #include <winsock2.h>
 #include <Windows.h>
 #include <cstring>
-#include "ClientNetwork.h"
-#include "NetworkData.h"
+#include "ClientTCP.h"
 #include "FT_config.h"
 
 class FT_Client
@@ -14,7 +13,7 @@ public:
 	FT_Client(void);
 	~FT_Client(void);
 
-	ClientNetwork* network;
+	ClientTCP* network;
 	
 	FT_Config ft_config;
 
@@ -24,7 +23,7 @@ public:
 
 	void updateUDP(double donnees_capteur[6]);
 
-	char network_data[MAX_PACKET_SIZE];
+	//char network_data[MAX_PACKET_SIZE];
 
 	void update(double donnees_capteur[6]);
 

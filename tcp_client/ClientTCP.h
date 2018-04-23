@@ -5,7 +5,6 @@
 #include "NetworkServices.h"
 #include <ws2tcpip.h>
 #include <stdio.h> 
-#include "NetworkData.h"
 
 // size of our buffer
 #define DEFAULT_BUFLEN 512
@@ -17,7 +16,7 @@
 #pragma comment (lib, "Mswsock.lib")
 #pragma comment (lib, "AdvApi32.lib")
 
-class ClientNetwork
+class ClientTCP
 {
 
 public:
@@ -29,8 +28,8 @@ public:
     SOCKET ConnectSocket;
 
     // ctor/dtor
-    ClientNetwork(void);
-    ~ClientNetwork(void);
+    ClientTCP(void);
+    ~ClientTCP(void);
 
 	int receivePackets(char *);
 	int sendMessage(char * message, int messageSize);

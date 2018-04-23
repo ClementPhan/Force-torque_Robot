@@ -1,8 +1,8 @@
 //#include "StdAfx.h"
-#include "ClientNetwork.h"
+#include "ClientTCP.h"
 
 
-ClientNetwork::ClientNetwork(void)
+ClientTCP::ClientTCP(void)
 {
     // create WSADATA object
     WSADATA wsaData;
@@ -103,13 +103,13 @@ ClientNetwork::ClientNetwork(void)
 }
 
 
-ClientNetwork::~ClientNetwork(void)
+ClientTCP::~ClientTCP(void)
 {
 }
 
-int ClientNetwork::receivePackets(char * recvbuf) 
+int ClientTCP::receivePackets(char * recvbuf) 
 {
-    iResult = NetworkServices::receiveMessage(ConnectSocket, recvbuf, MAX_PACKET_SIZE);
+    iResult = NetworkServices::receiveMessage(ConnectSocket, recvbuf, sizeof(recvbuf));
 
     if ( iResult == 0 )
     {
@@ -122,7 +122,7 @@ int ClientNetwork::receivePackets(char * recvbuf)
     return iResult;
 }
 
-int ClientNetwork::sendMessage(char * message, int messageSize) 
+int ClientTCP::sendMessage(char * message, int messageSize) 
 {
     iResult = NetworkServices::sendMessage(ConnectSocket, message, messageSize);
 
