@@ -47,7 +47,7 @@ void KalmanFilter::init() {
   initialized = true;
 }
 
-Eigen::VectorXd KalmanFilter::update(Eigen::VectorXd y, Eigen::VectorXd Fobj, Eigen::VectorXd rot) {
+void KalmanFilter::update(Eigen::VectorXd & displacement, Eigen::VectorXd y, Eigen::VectorXd Fobj, Eigen::VectorXd rot, mutex & m) {
 
   //double alpha;
   /*Eigen::VectorXd ySurf = y;
@@ -66,8 +66,9 @@ Eigen::VectorXd KalmanFilter::update(Eigen::VectorXd y, Eigen::VectorXd Fobj, Ei
   x_hat = x_hat_new;
 
   t += dt;
-    
-  return x_hat;
+
+  std::lock_guard<std::mutex> guard(m);
+  displacement = x_hat;
 }
 
 

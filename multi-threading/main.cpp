@@ -29,7 +29,7 @@ int main(int argc, char ** argv) {
     
 
     thread Kalman(&MultiThreading::runKalman , &global, Kf);
-    thread getInfo(&MultiThreading::acquireData, &global, argc, argv);
+    thread getInfo(&MultiThreading::acquireData, &global);
     thread sendInfo(&MultiThreading::sendData, &global);
     
     

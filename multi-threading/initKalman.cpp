@@ -13,14 +13,14 @@ using namespace std;
 #include "kalman.hpp"
 
 
-    
+/*    
 Eigen::VectorXd runFilter(){
     
     
     // Feed measurements into filter, output estimated states
     double t = 0;
 
-    /*cout << "t = " << t << ", " << "x_hat[0]: " << kf.state().transpose() << endl;
+    cout << "t = " << t << ", " << "x_hat[0]: " << kf.state().transpose() << endl;
     Eigen::VectorXd Fobj(m);
     for(int i = 0; i < measurements.size(); i++) {
         
@@ -38,8 +38,10 @@ Eigen::VectorXd runFilter(){
         kf.update(y, Fobj);
         cout << "t = " << t << ", " << "y[" << i << "] = " << y.transpose()
         << ", x_hat[" << i << "] = " << kf.state().transpose() << endl;
-    }*/
+    }
+	
 }
+*/
     
 
     

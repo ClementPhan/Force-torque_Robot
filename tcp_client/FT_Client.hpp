@@ -2,9 +2,9 @@
 #include <winsock2.h>
 #include <Windows.h>
 #include <cstring>
-#include "ClientNetwork.h"
-#include "NetworkData.h"
-#include "FT_config.h"
+#include "ClientNetwork.hpp"
+#include "NetworkData.hpp"
+#include "FT_config.hpp"
 
 class FT_Client
 {

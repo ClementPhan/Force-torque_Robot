@@ -10,6 +10,7 @@
 #include <iostream>
 #include <stdexcept>
 #include <time.h>
+#include <chrono>
 
 using namespace std;
 
@@ -37,92 +38,92 @@ MultiThreading::MultiThreading(Eigen::VectorXd rot, Eigen::VectorXd y, Eigen::Ve
 
 
 Eigen::VectorXd MultiThreading::getRotation(){
-    m.lock();
+	std::lock_guard<std::mutex> guard(m);
     return rotation;
-    m.unlock();
 }
 
 Eigen::VectorXd MultiThreading::getMesures(){
-    m.lock();
+	std::lock_guard<std::mutex> guard(m);
     return mesures;
-    m.unlock();
 }
 
 Eigen::VectorXd MultiThreading::getDisplacement(){
-    m.lock();
+	std::lock_guard<std::mutex> guard(m);
     return displacement;
-    m.unlock();
 }
 
 Eigen::VectorXd MultiThreading::getObjective(){
-    m.lock();
+	std::lock_guard<std::mutex> guard(m);
     return objective;
-    m.unlock();
 }
 
 void MultiThreading::setRotation(Eigen::VectorXd rot){
-    m.lock();
+	std::lock_guard<std::mutex> guard(m);
     rotation = rot;
-    m.unlock();
 }
 
 void MultiThreading::setMesures(Eigen::VectorXd y){
-    m.lock();
+	std::lock_guard<std::mutex> guard(m);
     mesures = y;
-    m.unlock();
 }
 
 void MultiThreading::setDisplacement(Eigen::VectorXd x){
-    m.lock();
+	std::lock_guard<std::mutex> guard(m);
     displacement = x;
-    m.unlock();
 }
 
-Eigen::VectorXd MultiThreading::setObjective(Eigen::VectorXd x){
-    m.lock();
-    return objective;
-    m.unlock();
+void MultiThreading::setObjective(Eigen::VectorXd Fobj){
+	std::lock_guard<std::mutex> guard(m);
+    objective= Fobj;
 }
 
 void MultiThreading::runKalman(KalmanFilter Kf){
      //cout << "Fobj1" << objective << endl;
     int i =0;
+	std::chrono::high_resolution_clock::time_point target_time;
     while(true){
-        m.lock();
+		target_time = std::chrono::steady_clock::now() + std::chrono::milliseconds(10);
         i +=1;
-        displacement = Kf.update(mesures, objective, rotation);
-        cout << "Kalman " << i << endl;
-        m.unlock();
+        Kf.update(displacement, mesures, objective, rotation, m);
+		{
+			std::lock_guard<std::mutex> guard(m);
+			cout << "Kalman " << i << endl; 
+		}
+		std::this_thread::sleep_until(target_time);
     }
 }
 
-void MultiThreading::acquireData( ){
-    
-	FT_Client* client_capteur;
-	client_capteur = new FT_Client();
-
+void MultiThreading::acquireData(){
+	//FT_Client* client_capteur;
+	//client_capteur = new FT_Client();
 	double donnees_capteur[6] = { 0, 0, 0, 0, 0, 0 };
-
-	client_capteur->get_config();
+	std::chrono::high_resolution_clock::time_point target_time;
+	//client_capteur->get_config();
+	int i=0;
     while(true){
-        
-        i +=1;
-		client_capteur->update(donnees_capteur);
-        cout << "Acquisition " << i << endl;
-        
-		m.lock();
-		y << donnees_capteur[0], donnees_capteur[1], donnees_capteur[2], donnees_capteur[3], donnees_capteur[4], donnees_capteur[5];
-		m.unlock();
+		target_time = std::chrono::steady_clock::now() + std::chrono::milliseconds(10);
+		i +=1;
+		//client_capteur->update(donnees_capteur);
+		{
+			std::lock_guard<std::mutex> guard(m);
+			cout << "Acquisition " << i << endl;
+			mesures << donnees_capteur[0], donnees_capteur[1], donnees_capteur[2], donnees_capteur[3], donnees_capteur[4], donnees_capteur[5];
+		}
+		std::this_thread::sleep_until(target_time);
     }
 }
 
 void MultiThreading::sendData(){
     int i = 0;
+	std::chrono::high_resolution_clock::time_point target_time;
     while(true){
-        m.lock();
         i +=1;
-        sendingScript();
-        cout << "Sending " << i << endl;
-        m.unlock();
+		target_time = std::chrono::steady_clock::now() + std::chrono::milliseconds(10);
+		sendingScript(); // DO NOT FORGET THE MUTEX !  "std::lock_guard<std::mutex> guard(m);"
+		{
+			std::lock_guard<std::mutex> guard(m);
+			cout << "Sending " << i << endl;
+		}
+		std::this_thread::sleep_until(target_time);
     }
 }
