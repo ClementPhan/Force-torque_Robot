@@ -11,6 +11,7 @@ private:
 	
 public:
 	FT_Client(void);
+	FT_Client(char * address, char * port);
 	~FT_Client(void);
 
 	ClientUDP* network;
@@ -20,8 +21,6 @@ public:
 	int startStream();
 
 	int update(double donnees_capteur[6]);
-
-	void update_old(double donnees_capteur[6]);
 
 	void get_config();
 };
