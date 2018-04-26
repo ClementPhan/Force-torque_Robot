@@ -5,7 +5,7 @@
 FT_Client::FT_Client(void)
 {
 
-	network = new ClientTCP();
+	network = new ClientUDP();
 
 }
 
@@ -15,21 +15,6 @@ FT_Client::~FT_Client(void)
 {
 }
 
-/*
-void FT_Client::sendActionPackets()
-{
-	// send action packet
-	const unsigned int packet_size = sizeof(Packet);
-	char packet_data[packet_size];
-
-	Packet packet;
-	packet.packet_type = ACTION_EVENT;
-
-	packet.serialize(packet_data);
-
-	NetworkServices::sendMessage(network->ConnectSocket, packet_data, packet_size);
-}
-*/
 
 int FT_Client::startStream()
 {
@@ -40,14 +25,35 @@ int FT_Client::startStream()
 	return NetworkServices::sendMessage(network->ConnectSocket, message, 8);
 }
 
-void FT_Client::updateUDP(double donnees_capteur[6])
+int FT_Client::update(double donnees_capteur[6])
 {
 	const int responseLength = 36;
 	char response[responseLength];
-	NetworkServices::receiveMessage(network->ConnectSocket, response, responseLength);
+	int iResult = 0;
+	while (iResult != responseLength)
+	{
+		iResult = NetworkServices::receiveMessage(network->ConnectSocket, response, responseLength);
+	}
+
+	if (ntohs(*(__int16*)&response[0]) != 0x1234)
+	{
+		printf( "bad header" );
+		return 1;
+	}
+	for (int i = 0; i < 3; i++) {
+		donnees_capteur[i] = ntohl(*(__int32*)&response[12 + i * 4]) / (ft_config.countsPerForce);
+	}
+	for (int i = 3; i < 6; i++) {
+		donnees_capteur[i] = ntohl(*(__int32*)&response[12 + i * 4]) / (ft_config.countsPerTorque);
+	}
+	return 0;
+
+
 }
 
-void FT_Client::update(double donnees_capteur[6])
+
+
+void FT_Client::update_old(double donnees_capteur[6])
 {
 	const int command_length = 20;						/* Commands are always 20 bytes */
 	char FT_get_command[command_length] = { 0 };	/* ReadFT is 0 followed by 19 zeros */
@@ -70,8 +76,8 @@ void FT_Client::update(double donnees_capteur[6])
 
 	for (int i = 0; i < 3; i++)
 	{
-		donnees_capteur[i] = donnees_capteur[i] * ft_config.scaleFactors[i] / ft_config.countsPerForce;
-		donnees_capteur[i+3] = donnees_capteur[i+3] * ft_config.scaleFactors[i+3] / ft_config.countsPerTorque;
+		//donnees_capteur[i] = donnees_capteur[i] * ft_config.scaleFactors[i] / ft_config.countsPerForce;
+		//donnees_capteur[i+3] = donnees_capteur[i+3] * ft_config.scaleFactors[i+3] / ft_config.countsPerTorque;
 	}
 }
 
@@ -149,5 +155,5 @@ void FT_Client::get_config()
 
 	std::memcpy(&ft_config.countsPerForce,	temp + 4, 4); /* Copy of output as specified in the ATI manual */
 	std::memcpy(&ft_config.countsPerTorque,	temp + 8, 4);
-	std::memcpy(ft_config.scaleFactors,		temp + 12, 12);
+	//std::memcpy(ft_config.scaleFactors,		temp + 12, 12);
 }
