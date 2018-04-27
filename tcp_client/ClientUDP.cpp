@@ -63,12 +63,8 @@ ClientUDP::ClientUDP(char* address, char* port)
         }
     }
 
-
-
     // no longer need address info for server
     freeaddrinfo(result);
-
-
 
     // if connection failed
     if (ConnectSocket == INVALID_SOCKET) 
@@ -77,21 +73,6 @@ ClientUDP::ClientUDP(char* address, char* port)
         WSACleanup();
         exit(1);
     }
-
-	
-	/*
-	// Set the mode of the socket to be nonblocking
-    u_long iMode = 1;
-
-    iResult = ioctlsocket(ConnectSocket, FIONBIO, &iMode);
-    if (iResult == SOCKET_ERROR)
-    {
-        printf("ioctlsocket failed with error: %d\n", WSAGetLastError());
-        closesocket(ConnectSocket);
-        WSACleanup();
-        exit(1);        
-    }
-	*/
 }
 
 

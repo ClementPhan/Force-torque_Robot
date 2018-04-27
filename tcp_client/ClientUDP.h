@@ -19,19 +19,18 @@
 
 class ClientUDP
 {
-
 public:
 
-    // for error checking function calls in Winsock library
-    int iResult;
-
-    // socket for client to connect to server
-    SOCKET ConnectSocket;
-
     // ctor/dtor
-    ClientUDP(void);
+    ClientUDP(void); // Defaults to "200.200.200.99:49152"
 	ClientUDP(char* address, char* port);
     ~ClientUDP(void);
+
+	// for error checking function calls in Winsock library
+	int iResult;
+
+	// socket for client to connect to server
+	SOCKET ConnectSocket;
 
 	int receivePackets(char *);
 	int sendMessage(char * message, int messageSize);
