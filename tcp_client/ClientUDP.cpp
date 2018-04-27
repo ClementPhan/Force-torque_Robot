@@ -97,7 +97,7 @@ ClientUDP::ClientUDP(char* address, char* port)
 
 ClientUDP::ClientUDP(void)
 {
-	ClientUDP(DEFAULT_ADDRESS, DEFAULT_PORT_UDP);
+	ClientUDP(DEFAULT_ADDRESS_UDP, DEFAULT_PORT_UDP);
 }
 
 ClientUDP::~ClientUDP(void)

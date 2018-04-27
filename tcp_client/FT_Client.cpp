@@ -16,38 +16,71 @@ FT_Client::FT_Client(char* address, char* port)
 
 FT_Client::~FT_Client(void)
 {
+	stopStream();
 }
 
 
 int FT_Client::startStream()
 {
-	char message[8] = {0};
-	*(unsigned __int16*)&message[0] = htons(0x1234); /* standard header. */
-	*(unsigned __int16*)&message[2] = htons(0x0002); /* per table 9.1 in Net F/T user manual : start stream */
-	*(unsigned __int32*)&message[4] = htonl(0); /* see section 9.1 in Net F/T user manual  : 0 is infinite */
-	return NetworkServices::sendMessage(network->ConnectSocket, message, 8);
+	if(isStreamStarted = false)
+	{
+		char message[8] = {0};
+		*(unsigned __int16*)&message[0] = htons(0x1234); /* standard header. */
+		*(unsigned __int16*)&message[2] = htons(0x0002); /* per table 9.1 in Net F/T user manual : start stream */
+		*(unsigned __int32*)&message[4] = htonl(0); /* see section 9.1 in Net F/T user manual  : 0 is infinite */
+		if (NetworkServices::sendMessage(network->ConnectSocket, message, 8) < 0)
+		{
+			return 1;
+		}
+		isStreamStarted = true;
+	}
+	return 0;
 }
 
-int FT_Client::update(double donnees_capteur[6])
+int FT_Client::stopStream()
+{
+	if (isStreamStarted = true)
+	{
+		char message[8] = { 0 };
+			*(unsigned __int16*)&message[0] = htons(0x1234); /* standard header. */
+			*(unsigned __int16*)&message[2] = htons(0x0000); /* per table 9.1 in Net F/T user manual : stop stream */
+			*(unsigned __int32*)&message[4] = htonl(0); /* see section 9.1 in Net F/T user manual  : 0 is infinite */
+			if (NetworkServices::sendMessage(network->ConnectSocket, message, 8) < 0)
+			{
+				return 1;
+			}
+			isStreamStarted = false;
+	}
+	return 0;
+}
+
+int FT_Client::update(int donnees_capteur[6])
 {
 	const int responseLength = 36;
 	char response[responseLength];
 	int iResult = 0;
-	while (iResult != responseLength)
-	{
-		iResult = NetworkServices::receiveMessage(network->ConnectSocket, response, responseLength);
-	}
+	int  temp[6];
 
+	iResult = NetworkServices::receiveMessage(network->ConnectSocket, response, responseLength);
+	/*
 	if (ntohs(*(__int16*)&response[0]) != 0x1234)
 	{
 		printf( "bad header" );
 		return 1;
 	}
-	for (int i = 0; i < 3; i++) {
-		donnees_capteur[i] = ntohl(*(__int32*)&response[12 + i * 4]) / (ft_config.countsPerForce);
+	*/
+	for (int i = 0; i < 6; i++) {
+		//donnees_capteur[i] = ntohl(*(int*)&response[12 + i * 4]);
+		temp[i] = ntohl(*(int*)&response[12 + i * 4]);
 	}
+	for (int i = 0; i < 6; i++)
+	{
+		printf("%i\n", temp[i]);
+	}
+	printf("\n\n");
+	Sleep(50);
 	for (int i = 3; i < 6; i++) {
-		donnees_capteur[i] = ntohl(*(__int32*)&response[12 + i * 4]) / (ft_config.countsPerTorque);
+		//donnees_capteur[i] = ntohl(*(__int32*)&response[12 + i * 4]) / (ft_config.countsPerTorque);
 	}
 	return 0;
 

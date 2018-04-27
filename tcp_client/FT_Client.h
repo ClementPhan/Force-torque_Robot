@@ -20,7 +20,9 @@ public:
 
 	int startStream();
 
-	int update(double donnees_capteur[6]);
+	int stopStream();
+
+	int update(int donnees_capteur[6]);
 
 	void get_config();
 };
