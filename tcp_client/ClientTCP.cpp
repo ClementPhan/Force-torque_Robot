@@ -1,5 +1,5 @@
 //#include "StdAfx.h"
-#include "ClientTCP.h"
+#include "ClientTCP.hpp"
 
 
 ClientTCP::ClientTCP(void)

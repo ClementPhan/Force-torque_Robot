@@ -1,5 +1,5 @@
 //#include "StdAfx.h"
-#include "../tcp_client/FT_Client.hpp"
+#include "FT_Client.hpp"
 
 
 FT_Client::FT_Client(void)
@@ -37,7 +37,6 @@ int FT_Client::startStream()
 	}
 	return 0;
 }
-
 
 int FT_Client::stopStream()
 {
