@@ -1,8 +1,6 @@
 #pragma once
 // Networking libraries
-#include <winsock2.h>
-#include <Windows.h>
-#include "NetworkServices.h"
+#include "NetworkServices.hpp"
 #include <ws2tcpip.h>
 #include <stdio.h> 
 
@@ -10,7 +8,6 @@
 #define DEFAULT_BUFLEN 512
 // port to connect sockets through 
 #define DEFAULT_PORT "49151"
-#define DEFAULT_PORT_UDP "49152"
 // Need to link with Ws2_32.lib, Mswsock.lib, and Advapi32.lib
 #pragma comment (lib, "Ws2_32.lib")
 #pragma comment (lib, "Mswsock.lib")

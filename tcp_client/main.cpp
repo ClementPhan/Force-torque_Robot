@@ -1,8 +1,8 @@
 //#include "stdafx.h"
 
 
-#include "FT_Client.h"
-#include "Robot_Client.h"
+#include "FT_Client.hpp"
+#include "Robot_Client.hpp"
 
 
 FT_Client* client_capteur;

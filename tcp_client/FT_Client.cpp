@@ -1,5 +1,5 @@
 //#include "StdAfx.h"
-#include "FT_Client.h"
+#include "FT_Client.hpp"
 
 
 FT_Client::FT_Client(void)

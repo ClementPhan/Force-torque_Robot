@@ -1,5 +1,5 @@
 //#include "StdAfx.h"
-#include "ClientUDP.h"
+#include "ClientUDP.hpp"
 
 
 ClientUDP::ClientUDP(char* address, char* port) 
