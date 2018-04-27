@@ -26,7 +26,7 @@ namespace EgmSmallTest
     class Program
     {
         // listen on this port for inbound messages
-        public static int IpPortNumber = 6510;  
+        public static int IpPortNumber = 6510;
 
         static void Main(string[] args)
         {
@@ -34,7 +34,7 @@ namespace EgmSmallTest
             Application.Run(new ControlPanel(s));
 
             Console.WriteLine("Press any key to Exit");
-            Console.ReadLine();  
+            Console.ReadLine();
         }
     }
 
@@ -51,7 +51,7 @@ namespace EgmSmallTest
         private float _y;
         private int _robotX;
         private int _robotY;
-        private int _robotZ; 
+        private int _robotZ;
 
         public double Height { get; set; }
 
@@ -65,9 +65,13 @@ namespace EgmSmallTest
             _y = -400;
             _robotX = 0;
             _robotY = 0;
-            _robotZ = 0; 
+            _robotZ = 0;
         }
-        
+
+
+
+
+        public double MyDouble { get; set; }
 
         public void SensorThread()
         {
@@ -89,14 +93,14 @@ namespace EgmSmallTest
                     DisplayInboundMessage(robot);
 
                     // Get the robots X-position
-                    _robotX = Convert.ToInt32((robot.FeedBack.Cartesian.Pos.X)); 
+                    _robotX = Convert.ToInt32((robot.FeedBack.Cartesian.Pos.X));
                     // Get the robots Y-position
-                    _robotY = Convert.ToInt32((robot.FeedBack.Cartesian.Pos.Y)); 
+                    _robotY = Convert.ToInt32((robot.FeedBack.Cartesian.Pos.Y));
                     // Get the robots Z-position
                     _robotZ = Convert.ToInt32((robot.FeedBack.Cartesian.Pos.Z));
 
 
-                
+
                     // create a new outbound sensor message
                     EgmSensor.Builder sensor = EgmSensor.CreateBuilder();
                     CreateSensorMessage(sensor);
@@ -142,7 +146,7 @@ namespace EgmSmallTest
                //Timestamp in milliseconds (can be used for monitoring delays)
                .SetTm((uint)DateTime.Now.Ticks)
                //Sent by sensor, MSGTYPE_DATA if sent from robot controller
-               .SetMtype(EgmHeader.Types.MessageType.MSGTYPE_CORRECTION); 
+               .SetMtype(EgmHeader.Types.MessageType.MSGTYPE_CORRECTION);
 
             sensor.SetHeader(hdr);
 
@@ -170,7 +174,7 @@ namespace EgmSmallTest
             // bind pos object to planned
             planned.SetCartesian(pos);
             // bind planned to sensor object 
-            sensor.SetPlanned(planned); 
+            sensor.SetPlanned(planned);
 
             return;
         }
@@ -189,7 +193,7 @@ namespace EgmSmallTest
             _sensorThread.Abort();
         }
 
-        
+
         //Set the Y-positions for the square
         public float Y_Values_Square()
         {
@@ -201,11 +205,12 @@ namespace EgmSmallTest
             else if (_robotX == _xStartPoint && _robotY == _yStartPoint - _distanceSquare && _y == _yStartPoint - _distanceSquare)
             {
                 _y = _y + _distanceSquare;
-            
-            }
-             return _y;
-        }
 
+            }
+            return _y;
+        }
+        //public double Variable { get; set; }
+        public static  double Variable { get; set; }
 
         // Set the X-positions for the square
         public float X_Values_Square()
@@ -215,13 +220,13 @@ namespace EgmSmallTest
                 _x = _x + _distanceSquare;
             }
 
-            else if(_robotX == _xStartPoint + _distanceSquare && _robotY == _yStartPoint - _distanceSquare && _x == _xStartPoint + _distanceSquare)
+            else if (_robotX == _xStartPoint + _distanceSquare && _robotY == _yStartPoint - _distanceSquare && _x == _xStartPoint + _distanceSquare)
             {
                 _x = _x - _distanceSquare;
             }
-            return _x; 
+            return _x;
         }
-    }  
+    }
 }
 
 
