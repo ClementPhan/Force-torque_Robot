@@ -32,5 +32,6 @@ public:
 
 	int receivePackets(char *);
 	int sendMessage(char * message, int messageSize);
+	int sendMessage(const char * message, int messageSize);
 };
 

@@ -136,3 +136,18 @@ int ClientTCP::sendMessage(char * message, int messageSize)
 
     return iResult;
 }
+
+int ClientTCP::sendMessage(const char * message, int messageSize)
+{
+	iResult = NetworkServices::sendMessage(ConnectSocket, message, messageSize);
+
+	if (iResult == 0)
+	{
+		printf("Connection closed\n");
+		closesocket(ConnectSocket);
+		WSACleanup();
+		exit(1);
+	}
+
+	return iResult;
+}

@@ -8,9 +8,10 @@
 class Robot_Client
 {
 private:
-	ClientTCP* network;
+	//ClientTCP* network;
 
 public:
+	ClientTCP* network;
 	Robot_Client(void);
 	Robot_Client(char * address, char * port);
 	~Robot_Client(void);

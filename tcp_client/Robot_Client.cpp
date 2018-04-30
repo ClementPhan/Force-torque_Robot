@@ -43,7 +43,7 @@ int Robot_Client::sendVChange(int VChange)
 	message = new char[s.length()];
 	memcpy(message, temp, s.length());
 	printf(message);
-	iResult = network->sendMessage(message, sizeof(message));
+	iResult = network->sendMessage(message,sizeof(message));
 	if (iResult != s.length())
 	{
 		printf("Bad mesage send");
@@ -56,13 +56,14 @@ int Robot_Client::sendZandVChange(int ZChange, int VChange)
 {
 	char* message;
 	int iResult = 0;
+	int length;
 	std::string s; // Used to convert from int to char*
 	s = "3 " + std::to_string(ZChange)+ " " + std::to_string(VChange) + " #"; // Code 3 for speed offset
 	const char* temp = s.c_str();
 	message = new char[s.length()];
 	memcpy(message, temp, s.length());
-	printf(message);
-	iResult = network->sendMessage(message, sizeof(message));
+	length = s.length();
+	iResult = network->sendMessage(s.c_str(), s.length());
 	if (iResult != s.length())
 	{
 		printf("Bad mesage send");
