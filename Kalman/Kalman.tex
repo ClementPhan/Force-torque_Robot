@@ -130,8 +130,8 @@ On note $dt$ le pas de temps associé au système discret.\\
 \vspace{0.3cm}
 Le modèle de Kalman discret est très proche du modèle continu, et on peut obtenir les nouvelles matrices discrètes à partir de celles du modèle continu. On a
 $$ \begin{array}{ccccc}
-A_d = e{Adt} \rule[0pt]{30pt}{0pt}
-B_d = \int_0^{dt} e^{Av}Bdv \, \mathrm{d}v \rule[0pt]{30pt}{0pt}& 
+A_d = e^{Adt} \rule[0pt]{30pt}{0pt}
+B_d = \int_0^{dt} e^{Av}B \, \mathrm{d}v \rule[0pt]{30pt}{0pt}& 
 M_d = I_n \rule[0pt]{30pt}{0pt}&
 C_d = C\rule[0pt]{30pt}{0pt} & 
 V_d= \frac{V}{dt}\rule[0pt]{30pt}{0pt}\\
@@ -233,15 +233,12 @@ $$
 
 ce qui simplifie grandement le problème
 
-\vspace{1cm}
-
-
+\subsubsection{Détermination des données du problème dans le cas continu}
 
 
 v et w sont ici respectivement le vecteur des signaux aléatoires qui polluent les mesures y et le vecteur  des signaux inconnus qui viennent perturber directement l'équation d'état du système. Ici  v représente l'imprécision du capteur et w rend compte des aspérités de la surface et de l'imprécision du robot. \\
-La matrice M relie le bruit d'état $w_x$ à w par la relation $w_x = Mw$
-
-\noindent
+La matrice M relie le bruit d'état $w_x$ à w par la relation $w_x = Mw$ \\
+\vspace {1cm} \\
 En faisant pour l'instant abstraction des vecteurs d'erreurs (et donc du dernier terme de chaque égalité) le système s'écrit dans notre cas comme  
 
 $$
@@ -263,9 +260,7 @@ $$
 \right.
 $$
 
-Expliquons ce modèle. \\
-La matrice A est déterminée à l'aide du premier principe de Newton. Celui-ci nous donne l'équation
-$ ma_z = k*(dz) $, où m est la masse totale du système et k est la raideur du ressort (on néglige toujours les frottements)
+Le choix a été fait ici de considérer l'accélération comme nulle car le déplacement du bras du robot est commandé en fonction de la force exercée sur le ressort, il n'en dépend pas directement.
 \\
 La matrice C est elle déterminée à partir d'une simple loi de Hooke: $F_z = k*d_z$. 
 
@@ -275,18 +270,27 @@ Déterminons désormais les  matrices associées vecteurs d'erreur v et w. \\
 on note 
 $$
 \begin{array}{lll}
- v &= \begin{pmatrix} v_{z} & v_{\dot{z}}  \end{pmatrix} ^T  & \text{où $v_z$ représente l'incertitude sur $F_z$} \\
- w &= \begin{pmatrix} w_z & w_{\dot{z}} &  w_{\delta{z}} \end{pmatrix}^T & 
+ v &= \begin{pmatrix}  v_{F_{z}}  \end{pmatrix} ^T  & \text{où $v_{F_{z}}$ représente l'incertitude sur la mesure $F_z$ du capteur} \\
+ w &= \begin{pmatrix} w_z  \end{pmatrix}&
  		\text{où}
 		\begin{array}[t]{l}
 		\text{$w_z$ représente l'incertitude de position du robot selon z} \\
-		\text{$w_{\dot{z}}$ représente l'incertitude de vitesse selon z} \\
-		\text{$w_{\delta{z}}$ représente l'incertitude sur les aspérités de la surface} \\
 		\end{array} \\
-
  \end{array}
  $$
  
+ Pour ce qui est du vecteur v son unique composante comprend en fait 3 termes associés respectivement 
+ $$
+ \begin{array}{l}
+ 	\text{à l'incertitude de mesure du capteur} \\
+	\text{à l'incertitude sur les aspérités de la surface} \\
+	\text{à l'incertitude sur la position du robot}
+ \end{array}
+ $$
+ 
+ Bien que ces deux dernières contributions soient intuitivement per comme des bruits d'état, elle ne viennent en fait pas perturber directement la vitesse ou l'accélération du robot, perçu comme infiniment rigide devant le poussoir à bille. Elle viennent cependant comprimer plus ou moins le ressort du poussoir et donc modifier les données reçues par le capteur. \\
+ 
+ \vspace{0.5cm}
 
 
 w(t) et v(t) sont des vecteurs gaussiens centrés de densité spectrale de puissance W et V respectivement. On a :
@@ -301,88 +305,150 @@ $$
 
 \vspace{1cm}
 
-V peut-être calculé à partir des données d'échantillonnage du capteur. On a en effet les précisions suivantes:
+V peut-être calculé à partir des données d'échantillonnage du capteur. Le certificat d'étalonnage nous indique en effet les précisions suivantes:
 $$
 \begin{array}{|c|c|c|c|c|c|}	
 	\hline
-	\bold{F_x} & \bold{F_y} & \bold{F_z} & \bold{M_x} & \bold{M_y} & \bold{M_z} \\
+	\bold{\delta F_x} & \bold{\delta F_y} & \bold{\delta F_z} & \bold{\delta M_x} & \bold{\delta M_y} & \bold{\delta M_z} \\
 	\hline 
 	1.00\% & 1.25\% & 0.75\% & 1.00\% & 1.25\% & 1.50\% \\
 	\hline
 \end{array}
 $$
 
-On estime également les ordres de grandeur des forces et moments qui seront rencontrés par le capteur 
+On estime également les ordres de grandeur des forces et moments qui seront rencontrés par le capteur (avec les hypothèses émises précédemment)
 $$
 \begin{array}{|c|c|c|c|c|c|}	
 	\hline
-	\bold{F_x} & \bold{F_y} & \bold{F_z} & \bold{M_x} & \bold{M_y} & \bold{M_z} \\
+	\bold{\bar{F}_x} & \bold{\bar{F}_y} & \bold{\bar{F}_z} & \bold{\bar{M}_x} & \bold{\bar{M}_y} & \bold{\bar{M}_z} \\
 	\hline 
-	1N & 1N & 20N & 1N.m & 1N.m & 1N.m \\
+	0N & 0N & 20N & 0N.m & 0N.m & 0N.m \\
 	\hline
 \end{array}
 $$
 
-En notant $\delta F_z$ la précision de la force $F_z$ et $\overline{F_z}$ son ordre de grandeur on obtient
+La précision du robot et des aspérités de la surface sont 
+$$
+\begin{array}{|c|c|}
+\hline 
+\bold{\delta z_{robot}} & \bold{\delta z_{asp}} \\
+\hline 
+0.02mm & 1mm \\
+\hline
+\end{array}
+$$
 
-\hspace{-3mm}
+L'ordre de grandeur des aspérités représente ici la différence de hauteur de surface non prévue maximale qui puisse être rencontrée entre deux pas de temps.\\
 
-\begin{align*}
+\vspace{1cm}
+V est la matrice de densité spectrale de puissance du vecteur $\ul{v}$. Chaque source d'erreur étant indépendante, cela signifie que la matrice est diagonale, et on a 
+$$ 
+\begin{array}{ll}
+V_{ii} &= \mathcal{L}[\phi_{ii}(\tau)] \\
+&= \int_{-\infty}{+\infty} E[v_{i}(t)v_{i}(t+\tau)^{t}] \, \mathrm{d}\tau
+\end{array}
+$$
+
+Le vecteur v étant un bruit blanc gaussien centré, les choses se simplifient. En effet on a $\forall v_{i}$
+$$\phi(t,\tau)_{ii} = \sigma_{i}^{2}\delta(0)$$ et donc
+$$V_{ii} = \sigma_{i}^{2} = Var(v_{i})$$
+
+Il ne reste plus qu'à calculer les écarts types associés à chaque erreur. L'intervalle de confiance à 95\% étant l'intervalle $[m-1.96\sigma, m+1.96\sigma]$ (m étant la moyenne) on a 
+$$
+\begin{array}{lrcl}
+	&\text{[}-\delta F_{z}*\bar{F}_{z} \rule{2mm}{0mm} ; \rule{2mm}{0mm} \delta F_{z}*\bar{F}_{z} \text{]} &=& \text{[} -2*1.96*\sigma_{F_{z}} \rule{2mm}{0pt}; \rule{2mm}{0pt} 2*1.96*\sigma_{F_{z}}  \text{]} \\
+	&\text{[} -\delta z_{asp} \rule{2mm}{0pt}; \rule{2mm}{0pt} \delta z_{asp} \text{]} &=& \text{[}-2*1.96*\sigma_{z_{asp}} \rule{2mm}{0pt}; \rule{2mm}{0pt} 2*1.96*\sigma_{z_{asp}}  \text{]} \\
+	&\text{[} -\delta z_{robot} \rule{2mm}{0pt}; \rule{2mm}{0pt} \delta z_{robot} \text{]} &=& \text{[}-2*1.96*\sigma_{z_{robot}} \rule{2mm}{0pt}; \rule{2mm}{0pt} 2*1.96*\sigma_{z_{robot}}  \text{]} \\
+	\text{Soit} & & & \\
+	& \sigma_{F_{z}} &=& \\
+	& \sigma_{z_{asp}} &= & \\
+	&\sigma_{z_{robot}} &= & \\
+\end{array}
+$$
+
+\vspace{1cm}
+On en déduit
+$$
+\begin{array}{ll}
 V &= \begin{pmatrix}
-\overline{F_z}^2\delta{F_z} - (\overline{F_z}\delta{F_z})^2
+\sigma_{F_{z}}^{2} +  \sigma_{z_{asp}}^{2} +  \sigma_{z_{robot}}^{2} 
 \end{pmatrix} \\
 &=  \begin{pmatrix}
-2.978
-\end{pmatrix}
-\end{align*}
+X
+\end{pmatrix} \rule{0pt}{15pt}
+\end{array}
+$$
 
-%V &= \begin{pmatrix} Var(v_x) & Cov(v_x,v_y) & Cov(v_x,v_z) & Cov(v_x,v_{\dot{x}}) & Cov(v_x,v_{\dot{y}}) & Cov(v_x,v_{\dot{z}}) \\
-%			      Cov(v_x,v_y) & Var(v_y) & Cov(v_y,v_z) & Cov(v_y,v_{\dot{x}}) & Cov(v_y, v_{\dot{y}}) & Cov(v_y,v_{\dot{z}}) \\
-%			      Cov(v_x,v_z) & Cov(v_y,v_z) & Var(v_z) & Cov(v_z,v_{\dot{x}}) & Cov(v_z,v_{\dot{y}}) & Cov(v_z,v_{\dot{z}}) \\
-%			      Cov(v_x,v_{\dot{x}}) & Cov(v_y, v_{\dot{x}}) & Cov(v_z, v_{\dot{x}}) & Var(v_{\dot{x}}) & Cov(v_{\dot{x}}, v_{\dot{y}}) & Cov(v_{\dot{x}}, v_{\dot{z}}) \\
-%			      Cov(v_x, v_{\dot{y}}) & Cov(v_y, v_{\dot{y}}) &  Cov(v_z, v_{\dot{y}}) & Cov(v_{\dot{x}}, v_{\dot{y}}) & Var(v_{\dot{y}}) &  Cov(v_{\dot{y}}, v_{\dot{z}}) \\
-%			      Cov(v_x, v_{\dot{z}}) & Cov(v_y, v_{\dot{z}}) & Cov(v_z, v_{\dot{z}}) & Cov(v_{\dot{x}}, v_{\dot{z}}) & Cov(v_{\dot{y}}, v_{\dot{z}}) & Var(v_{\dot{z}}) \\
 
 
 
 \vspace{2cm}
 
-On calcule ensuite W dont les termes diagonaux de la matrice sont les fonctions scalaires d'auto-corrélation de chaque composante du vecteur, tandis que les termes inter-diagonaux sont les fonctions d'inter-corrélation entre les différentes composantes. Les différentes composantes du vecteur étant indépendantes, W est une matrice diagonale.
+W est ensuite calculé de la même façon, en considérant que $\delta \dot{z}_{robot} = \delta z_{robot} = 0.02mm$
+
 $$
-E[w(t) w(t+\tau)^T ] = W \delta(\tau) \\
+\begin{array}{rcl}
+	\text{[} -\delta \dot{z}_{robot} \rule{2mm}{0pt}; \rule{2mm}{0pt} \delta \dot{z}_{robot} \text{]} &=& \text{[}-2*1.96*\sigma_{dot{z}_{robot}} \rule{2mm}{0pt}; \rule{2mm}{0pt} 2*1.96*\sigma_{\dot{z}_{robot}}  \text{]} \\
+	\sigma_{\dot{z}_{robot}} &= & \\
+\end{array}
 $$
 
-
-En considérant que la précision du robot est de 0,02mm en position ou en vitesse et que la précision de l'usinage de la surface est de 0,1mm, on en déduit W:
-
-\begin{align*}
+$$
+\begin{array}{ll}
 W &=
 \begin{pmatrix}
-0.02-0.02^2 & 0 & 0  \\
-0 & 0.02-0.02^2  & 0  \\
- 0 & 0 & 0.1-0.1^2  \\
-\end{pmatrix} \\
+ \sigma_{\dot{z}_{robot}}^{2} 
+\end{pmatrix} \\
 &=
 \begin{pmatrix}
-0.0196 & 0 & 0  \\
-0 & 0.0196 & 0  \\
-0 & 0 & 0.09  \\
-\end{pmatrix} \rule[20pt]{0pt}{10pt} 
-\end{align*}
+X
+\end{pmatrix} \rule{0pt}{15pt}
+\end{array}
+$$
 
+\vspace{0.5cm}
 
-Déterminons enfin la matrice M qui permet de "relier" le vecteur w à ttl'équation d'état 
+Déterminons enfin la matrice M qui permet de "relier" le vecteur w à l'équation d'état. Elle est ici triviale puisqu'on a tout simplement 
 $$
 M = 
 \begin{pmatrix}
-0 & 1 & 0 \\
-\frac{k}{m} & 0 & \frac{k}{m}  \\
+1 \\ 0
 \end{pmatrix}
 $$
 
 
-Toutes les données de l'équation ayant été définies, on peut désormais calculer la matrice d'erreur P à partir de l'équation de Ricatti. 
-$$ AP + PA^T -PC^T V^{-1} CP + MWM^{T} $$
+\vspace{0.5cm}
+
+Toutes les données de l'équation ayant été définies, on peut désormais calculer les matrices associées au modèle discret
+$$
+\begin{array}{ccc}
+    \begin{array}[t]{rcl}
+    A_{d} &=& e^{Adt} \\
+    &=&\begin{pmatrix} 1 & e^{dt} \\ 1 & 1 \end{pmatrix}\\
+    && \\
+    C_{d} &=& C \\
+    	     &= &\begin{pmatrix} k & 0 \end{pmatrix} \\
+    \end{array} \rule{10mm}{0mm}
+
+    \begin{array}[t]{rcl}
+    B_{d} &=& \int_{0}^{dt} e^{Av}D \, \mathrm{d}v \\
+    	     &=& D \text{[}\frac{e^{Av}}{A}\text{]}_{0}^{dt} \rule{0pt}{15pt}\\
+    	     &=& D\frac{e^{Adt}-1}{A} \rule{0pt}{15pt} \\
+	     &=&\\
+    \end{array} \rule{10mm}{0mm}
+
+    \begin{array}[t]{rcl}
+    W_{d} &=& dtMWM^{T} \\
+    &=&\\
+    && \\
+    V_{d} &=& \frac{V}{dt} \\
+    &=&\\
+    \end{array}
+\end{array} 
+$$
+
+Et on peut calculer la matrice d'erreur P à partir de l'équation de Ricatti discrète. 
+$$ P_{p} =  A_{d}P_{p}A_{d}^{T} -A_{d}P_{p}C_{d}^{T}\big(C_{d}P_{p}C_{d}^{T}+V_{d}\big)^{-1}C_{d}P_{p}A_{d}^{T}  + M_{d}W_{d}M_{d}^{T} $$
 
 Une résolution numérique nous donne 
 $$
@@ -411,10 +477,10 @@ Les valeurs mesurées par le capteur dépendent désormais de l'angle $\alpha$ f
 
 $$
 \begin{array}{llll}
-F_x &=& F_N sin(\alpha) &\\
-F_z &=& F_N cos(\alpha) &\\
+F_x &=& F_N \sin(\alpha) &\\
+F_z &=& F_N \cos(\alpha) &\\
 M_y &= &F_x*H &\\
-	&= &F_N sin(\alpha)*H &
+	&= &F_N \sin(\alpha)*H &
 	\begin{array}[t]{l}
 	\text{en faisant l'hypothèse que la hauteur découverte de la bille} \\ 
 	\text{est négligeable devant la hauteur du poussoir}
@@ -424,7 +490,7 @@ $$
 
 L'objectif force devant désormais être mesuré selon la nouvelle normale à la surface, il convient de corriger en amont la valeur de $F_z$ injectée dans le filtre. 
 On détermine tout d'abord $\alpha$ grâce aux données du capteur:
-$$ \alpha = arctan(\frac{F_{x_c}}{F_{z_c}}) $$
+$$ \alpha = \arctan(\frac{F_{x_c}}{F_{z_c}}) $$
 On a 
 $$
 \begin{array}{lll}
@@ -435,18 +501,24 @@ F_z &=& F_{z_c}-F_{obj}cos(\alpha)
 $$
 
 Afin de tenir compte de la pente imprévue, il faut également ajuster le déplacement et la vitesse selon z. \\
-Pour cela, ..
+Pour cela, on prend désormais en compte un vecteur commande u correspondant à la vitesse du robot. Afin de suivre la pente, on souhaite désormais imposer une vitesse verticale supplémentaire égale à $\sin{\alpha}*\dot{z}_{robot}$. \\
+On pose donc
 $$ 
 \begin{array}{lll}
 u &=& (\dot{x}_{robot}) \\
-D &=& \begin{pmatrix}
-sin(\alpha)\\
+B &=& \begin{pmatrix}
+\sin(\alpha)\\
 0
 \end{pmatrix} \\
 \end{array}
 $$
-On 
 
+
+
+\noindent La matrice P n'est ici pas modifiée, seule l'équation du filtre est impactée.
+
+
+\subsection{Modèle 2D avec prise en compte du frottement}
 
 
 
