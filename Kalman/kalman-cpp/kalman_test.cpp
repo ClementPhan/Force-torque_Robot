@@ -6,41 +6,40 @@ using namespace std;
 #include "kalman.hpp"
 
 int main(int argc, char* argv[]) {
-
     
-    // Construct the filter
-    KalmanFilter kf(dt, A, C, W, V, P);
+    cout << "hello" << endl;
+    
+    int n = 2;
+    int m = 1;
+    int c = 2;
+    
+    float dt = 0.001;
+    double Fobj = 20;
+
+    //initialize Filter
+    KalmanFilter kf;
+    kf = kf.setRobotKalman(dt, Fobj);
     
     // List of noisy position measurements (y)
-    vector<double> measurements(10, 1);
+    Eigen::MatrixXd measurements(3,3);
+    measurements << 0, 0, 20,
+                    0, 0, 21,
+                    0, 0, 20;
+    
+    Eigen::VectorXd y(3);
 
     
-    // Best guess of initial states
-    Eigen::VectorXd x0(n);
-    x0 << measurements[0], 0, -9.81;
-    kf.init(0, x0);
-    
     // Feed measurements into filter, output estimated states
-    double t = 0;
-    Eigen::VectorXd y(m);
-    cout << "t = " << t << ", " << "x_hat[0]: " << kf.state().transpose() << endl;
-    Eigen::VectorXd Fobj(m);
-    for(int i = 0; i < measurements.size(); i++) {
-        
+    float t = 0;
+    for(int i = 0; i < measurements.rows(); i++) {
         t += dt;
-        double theta = 0; //rotation entre l'état précédent et l'état actuel
         
-        A << 1, 0, 0, dt, 0, 0,
-        0, 1, 0, 0, dt, 0,
-        0, 0, 1, 0, 0, dt,
-        0, 0, 0, cos(theta), -sin(theta), 0,
-        0, 0, 0, sin(theta), cos(theta), 0,
-        0, 0, 0, 0, 0, 1;
+        y = measurements.block<1,3>(i,0);
+        cout << y << endl;
+        kf.update(y);
         
-        y << measurements[i];
-        kf.update(y, Fobj);
         cout << "t = " << t << ", " << "y[" << i << "] = " << y.transpose()
-        << ", x_hat[" << i << "] = " << kf.state().transpose() << endl;
+        << ", x_hat[" << i << "] = " << kf.getState().transpose() << endl;
     }
     
     return 0;

@@ -497,14 +497,14 @@ Etant donné qu'il n'est pas possible de changer l'orientation du robot XXX -> C
 Les valeurs mesurées par le capteur dépendent désormais de l'angle $\alpha$ formé avec l'horizontale. On a 
 
 $$
-\begin{array}{llll}
+\begin{array}{lllll}
 F_x &=& F_N \sin(\alpha) &\\
 F_z &=& F_N \cos(\alpha) &\\
-M_y &= &F_x*H &\\
+M_y &= &F_x*H & \text{en faisant l'hypothèse que la hauteur découverte de la bille} \\ 
+	&&& \text{est négligeable devant la hauteur du poussoir} \\
 	&= &F_N \sin(\alpha)*H &
 	\begin{array}[t]{l}
-	\text{en faisant l'hypothèse que la hauteur découverte de la bille} \\ 
-	\text{est négligeable devant la hauteur du poussoir}
+	
 	\end{array}
 \end{array}
 $$

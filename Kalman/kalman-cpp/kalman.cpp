@@ -18,13 +18,15 @@ KalmanFilter::KalmanFilter(){}
 KalmanFilter::KalmanFilter(
                            double dt,
                            double L,
+                           double Fobj,
+                           const Eigen::VectorXd& u,
                            const Eigen::MatrixXd& A,
                            const Eigen::MatrixXd& C,
                            const Eigen::MatrixXd& W,
                            const Eigen::MatrixXd& V,
                            const Eigen::MatrixXd& P)
 : A(A), C(C), W(W), V(V), P0(P),
-m(C.rows()), n(A.rows()), dt(dt), L(L), initialized(false),
+m(C.rows()), n(A.rows()), dt(dt), Fobj(Fobj), L(L),u(u), initialized(false),
 I(n, n), x_hat(n), x_hat_new(n)
 {
     I.setIdentity();
@@ -37,6 +39,8 @@ void KalmanFilter::init(double t0, const Eigen::VectorXd& x0) {
     this->t0 = t0;
     t = t0;
     initialized = true;
+    
+    cout <<"init C" << C;
 }
 
 void KalmanFilter::init() {
@@ -47,39 +51,51 @@ void KalmanFilter::init() {
     initialized = true;
 }
 
-void KalmanFilter::update(Eigen::VectorXd & displacement, Eigen::VectorXd y, Eigen::VectorXd Fobj, Eigen::VectorXd rot, mutex & m) {
+void KalmanFilter::update(Eigen::VectorXd y) {
+    c = 2; //why necessary ?
+    double alpha;
+    if(y(2) != 0){
+        alpha = 0;
+    }
+    else{
+        alpha = y(0)/y(2);
+    }
     
-    //double alpha;
-    /*Eigen::VectorXd ySurf = y;
-     ySurf(2) += y(4)*sin(alpha)*L;
-     Eigen::VectorXd  dy = Fobj -ySurf;*/
-    Eigen::VectorXd  dy = Fobj - y;
+    Eigen::VectorXd Fz(1);
+    Fz << y(2);
+    
+    Eigen::MatrixXd B(n,n);
+    B << sin(alpha), 0,
+        0, 0;
+    
+    Eigen::MatrixXd D(m,c);
+    D << 0, cos(alpha);
+    
+    /*Eigen::MatrixXd K(2,1);
+    K << 0, 0;*/
+    
+    cout << "C" << C << endl;
     
     if(!initialized)
         throw std::runtime_error("Filter is not initialized!");
     
-    x_hat_new = A * x_hat; //prédiction de l'état à t+1 x(k+1|k). u nul !
+    x_hat_new = A * x_hat + B*u; //prédiction de l'état à t+1 x(k+1|k). u nul !
     P = A*P*A.transpose() + W; // 2.24 prédiction de l'erreur à t+1 P(k+1|k)
     K = P*C.transpose()*(C*P*C.transpose() + V).inverse(); // e W 2.27 donne K(t+1)
-    x_hat_new += K * (dy - C*x_hat_new); // x(k+1|k+1) état estimé à t+1 //idem u nul !
+    x_hat_new += A*K*Fz - A*K*(C*x_hat + D*u); // x(k+1|k+1) état estimé à t+1 //idem u nul !
     P = (I - K*C)*P; // P(k+1|k+1) on calcule l'erreur d'estimation
     x_hat = x_hat_new;
     
     t += dt;
-    
-    std::lock_guard<std::mutex> guard(m);
-    displacement = x_hat;
+
 }
 
 
-KalmanFilter KalmanFilter::setRobotKalman(double stepTime){
+KalmanFilter KalmanFilter::setRobotKalman(double stepTime, double ForceObjective){
     
-    
-    
-    cout << "Hello" << endl;
-    
-    n = 6; // Nombre d'états: 3 déplacements et 3 vitesses
-    m = 6; // Nombre de mesures: les forces mesurées dans les trois directions par le capteur (repère de la surface)
+    n = 2; // Nombre d'états: 3 déplacements et 3 vitesses
+    m = 1; // Nombre de mesures: les forces mesurées dans les trois directions par le capteur (repère de la surface)
+    c = 2; // Nombre de commandes
     //outputs: (x, y, z, u, v, w) les déplacements sont relatifs à la trajectoire, les vitesses sont absolues
     
     
@@ -88,62 +104,49 @@ KalmanFilter KalmanFilter::setRobotKalman(double stepTime){
     Eigen::MatrixXd V(m,m);
     Eigen::MatrixXd W(n,n);
     Eigen::MatrixXd P(n,n);
+    Eigen::VectorXd u(c);
     
-    int k = 2; // Spring's stiffness (N/mm)
+    double k = 3.1*pow(10,-3); // Spring's stiffness (N/mm)
     
-    int L = 100; // Tool's length (mm)
+    double L = 0.035; // Tool's length (mm)
     
-    double g = 9.81*pow(10,-3); //
+    double g = 9.81; //
     
     dt = stepTime; // Time step
+    Fobj = ForceObjective;
+    v_robot = 1;
+    
+    u << v_robot, Fobj;
     
     // Defining matrices
     
-    /*A << 1, 0, 0, dt, 0, 0,
-     0, 1, 0, 0, dt, 0,
-     0, 0, 1, 0, 0, dt,
-     0, 0, 0, 1, 0, 0,
-     0, 0, 0, 0, 1, 0,
-     0, 0, 1/dt, 0, 0, 0;*/
     
     
+    A << 1, dt,
+        0, 1;
     
-    A << 1, 0, 0, 1, 0, 0,
-    0, 1, 0, 0, 0, 0,
-    0, 0, 1, 0, 0, 0,
-    0, 0, 0, 1, 0, 0,
-    0, 0, 0, 0, 1, 0,
-    0, 0, 0, 0, 0, 0;
+    C << k, 0;
     
-    C << 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0,
-    0, 0, k*dt, 0, 0, 0;  // DeltaF = k*Deltax = k*v*dt
+    double Fx = 2.;
+    double Fz = 20.; // ordres de grandeurs des forces que l'on s'attend à rencontrer afin d'en déduire le bruit du capteur
     
-    Eigen::MatrixXd ligne(1,6);
-    ligne << pow(10,-4), pow(10,-4), pow(10,-4), pow(10,-4), pow(10,-4), pow(10,-4); // précision du déplacement du robot
+    double dFx = 1*pow(10, -3);
+    double dFz = 0.75*pow(10, -3);
+    double dMy = 1.25*pow(10,-3);
     
-    W << ligne, ligne, ligne, ligne, ligne, ligne;
+    double zasp = 1.*pow(10,-3);
+    double zrobot = 0.2*pow(10,-3);
     
-    double Fx = 1.*1.;
-    double Fy = 1.*1.25;
-    double Fz = 10.*0.75; // ordres de grandeurs des forces que l'on s'attend à rencontrer afin d'en déduire le bruit du capteur
-    double Mx = 1.*1.;
-    double My = 1.*1.25;
-    double Mz = (g*L/2.)*1.5;
     
-    V << Fx*Fx, Fx*Fy, Fx*Fz, Fx*Mx, Fx*My, Fx*Mz,
-    Fx*Fz, Fy*Fy, Fy*Fz, Fy*Mx, Fy*My, Fy*Mz,
-    Fx*Fz, Fy*Fz, Fz*Fz, Fz*Mx, Fz*My, Fz*Mz,
-    Fx*Mx, Fy*Mx, Fz*Mx, Mx*Mx, Mx*My, Mx*Mz,
-    Fx*My, Fy*My, Fz*My, Mx*My, My*My, My*Mz,
-    Fx*Mz, Fy*Mz, Fz*Mz, Mx*Mz, My*Mz, Mz*Mz; //Les valeurs sont les valeurs de précision de la mesure indiquées sur le certificat d'échantillonage du capteur
-    V = V*pow(10, -4); //Les valeurs étaient en %
+    V << (Fz*dFz + zasp*zasp + zrobot*zrobot)/(1.96*1.96*dt);
+    W << zrobot*zrobot/(1.96*1.96), 0,
+    0, 0;
     
-    // Calcul de P: AP + PAt -Pctv-1Cp +MWMt = 0
-    P = W;
+    
+    // Calcul de P solution de l'équation de Ricatti discrète
+    P <<  2.52438142*pow(10,-9) ,   9.03184257*pow(10,-25),
+        9.03184257*pow(10,-25), 0;
+
     
     /*cout << "A: \n" << A << endl;
      cout << "B: \n" << C << endl;
@@ -152,12 +155,16 @@ KalmanFilter KalmanFilter::setRobotKalman(double stepTime){
      cout << "P: \n" << P << endl;*/
     
     // Construct the filter
-    KalmanFilter kf(dt, L, A, C, W, V, P);
+    KalmanFilter kf(dt, Fobj, L, u, A, C, W, V, P);
+    
     
     // Best guess of initial states
     Eigen::VectorXd x0(n);
+    x0 << 0, 0;
     //rajouter initialisation nulle
     kf.init(0, x0);
+    
+    std::cout << "hello" << endl;
     
     return kf;
 }

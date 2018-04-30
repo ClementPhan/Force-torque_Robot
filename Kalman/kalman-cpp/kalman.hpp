@@ -30,7 +30,9 @@ public:
      */
     KalmanFilter(
                  double dt,
+                 double Fobj,
                  double L,
+                 const Eigen::VectorXd& u,
                  const Eigen::MatrixXd& A, // matrice de doubles de taille non définie
                  const Eigen::MatrixXd& C,
                  const Eigen::MatrixXd& Q,
@@ -42,7 +44,7 @@ public:
     KalmanFilter();
     
     // Create a Kalman filter adapted for the specific robot case
-    KalmanFilter setRobotKalman(double stepTime);
+    KalmanFilter setRobotKalman(double stepTime, double ForceObjective);
     
     // Initialize the filter with initial states as zero.
     void init();
@@ -55,12 +57,12 @@ public:
     
     /* Update the estimated state based on measured values. The
      time step is assumed to remain constant.*/
-    void update(Eigen::VectorXd & displacement, Eigen::VectorXd y, Eigen::VectorXd Fobj, Eigen::VectorXd rot, mutex & m);
+    void update(Eigen::VectorXd y);
+    
     // Return the current state or time.
     Eigen::VectorXd getState() { return x_hat; };
     double getTime() { return t; };
     
-    void random(mutex m);
     
 private:
     
@@ -68,7 +70,7 @@ private:
     Eigen::MatrixXd A, C, W, V, P, K, P0;
     
     // System dimensions
-    int m, n;
+    int m, n, c;
     
     // Initial and current time
     double t0, t;
@@ -76,8 +78,17 @@ private:
     // Discrete time step
     double dt;
     
-    //Lenght of tool (specific to the robot)
+    // Force objective
+    double Fobj;
+    
+    // Lenght of tool (specific to the robot)
     double L;
+    
+    // Command vector
+    Eigen::VectorXd u;
+    
+    // Speed of the robot
+    double v_robot;
     
     // Is the filter initialized?
     bool initialized;
