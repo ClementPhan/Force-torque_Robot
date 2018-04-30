@@ -29,13 +29,17 @@ MODULE Tache_Principale
     PERS bool flag; !Booleen de declenchement de la correction
 
     VAR bool flag1;
+    VAR bool flag2;
 
-    PERS tasks task_list{2} := [["Serveur"], ["T_ROB1"]];   !Varibales de stnchronisation des tasks
+    PERS tasks task_list1{2} := [["TestServeur"], ["T_ROB1"]];  !Varibales de stnchronisation des tasks
     VAR syncident sync1;
     VAR syncident sync2;
 
+    CONST num speed:=100;
+    VAR num r:=100;
+
     ! =============DECLARATIONS============
-    VAR speeddata MySpeed:=[100,100,5000,1000];
+    VAR speeddata MySpeed:=[speed,100,5000,1000];
 
     CONST jointtarget Targ0:=[[33.91,89.83,-18.86,0,19.03,0],[0,9E+09,9E+09,9E+09,9E+09,9E+09]];
 
@@ -99,6 +103,11 @@ MODULE Tache_Principale
 
 	TRAP routine
 
+        VAR num ind:=1;
+        VAR num newind;
+        VAR string offset1;
+        VAR string ratio1;
+
         !Partie reception
 
     	RMQGetMessage rmqmessage1;  !Reception du message RMQ
@@ -107,7 +116,14 @@ MODULE Tache_Principale
     	IF rmqheader1.datatype = "string" AND rmqheader1.ndim = 0 THEN
 
     		RMQGetMsgData rmqmessage1, msg1;    !Recuperation des donnees
-            flag1 := StrToVal(msg1, offset);    !Conversion des donnees
+            newind := StrMatch(msg1,ind," ") + 1;
+            offset1:= StrPart(msg1,ind,newind - ind -1);
+
+            ind:=newind;
+            ratio1:= StrPart(msg1,ind,StrLen(msg1)-ind+1);
+
+            flag1 := StrToVal(offset1, offset);    !Conversion des donnees
+            flag2 := StrToVal(ratio1, r);
 
     	ELSE
 
@@ -116,6 +132,8 @@ MODULE Tache_Principale
         ENDIF
 
         !Partie correction
+
+        VelSet r,speed; !Modifiaction de la vitesse
 
         write_offset.x := 0;
         write_offset.y := 0;
@@ -127,8 +145,6 @@ MODULE Tache_Principale
         RMQEmptyQueue;
 
 	ENDTRAP
-
-
     PROC main()
 
         CorrCon z_id;	!Connection du correcteur
@@ -143,7 +159,7 @@ MODULE Tache_Principale
 
         MoveAbsJ Targ0,MySpeed,z1,Tool0; ! Initialisation : le robot va au point de depart de la trajectoire
 
-        WaitSyncTask sync1, task_list;  !Synchronisation des deux tâches
+        WaitSyncTask sync1, task_list1;  !Synchronisation des deux tâches
 
         TPWrite "Starting routine."; !Test de declenchement du process
 
