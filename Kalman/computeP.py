@@ -11,7 +11,7 @@ m = 20*pow(10,-3);
     
 g = 9.81*pow(10,-3); 
 
-dt = 0.01;
+dt = 0.001;
 
 
 Fx = 1.
@@ -50,9 +50,9 @@ A = np.array([0,1,
               0, 0], float).reshape(2,2);
 C = np.array([k, 0],float).reshape(1,2);
 
-V = np.array([var(Fz,PFz)+ var(zasp,k)-var(zrobot, k)], float).reshape(1,1)
+V = np.array([(pow(PFz*Fz, 2)+ pow(zasp, 2) + pow(zrobot, 2))/(pow(1.96,2))], float).reshape(1,1)
              
-W = np.array([0.0196]).reshape(1,1)
+W = np.array([zrobot*zrobot/(1.96*1.96)]).reshape(1,1)
              
 M = np.array([1,
              0], float).reshape(2,1)
@@ -61,7 +61,8 @@ M = np.array([1,
 
 ### matrices modèle discret
 
-Ad = np.exp(A*dt)
+Ad = np.array([1,dt,
+              0, 1], float).reshape(2,2)
 
 Cd = C
 

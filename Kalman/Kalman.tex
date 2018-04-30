@@ -17,6 +17,17 @@
 \newcommand\ull[1]{\underline{\underline{#1}}}
 %\usepackage{minted}
 
+\newenvironment{changemargin}[2]{\begin{list}{}{%
+\setlength{\topsep}{0pt}%
+\setlength{\leftmargin}{0pt}%
+\setlength{\rightmargin}{0pt}%
+\setlength{\listparindent}{\parindent}%
+\setlength{\itemindent}{\parindent}%
+\setlength{\parsep}{0pt plus 1pt}%
+\addtolength{\leftmargin}{#1}%
+\addtolength{\rightmargin}{#2}%
+}\item }{\end{list}}
+
 
 
 \begin{document}
@@ -219,7 +230,7 @@ Dans le cadre de ce projet, nous avons travaillé avec Python et la fonction sci
 
 Pour simplifier le problème, considérons tout d'abord que l'outil utilisé est parfaitement perpendiculaire à la surface au point de contact et qu'il n'y a pas de frottement. Dans ce cas, on peut se permettre de considérer seulement les données selon z (repère orienté selon la normale à la surface au point courant).
 
-On prend alors comme vecteurs d'état et de mesure respectivement
+On prend alors comme vecteurs d'état, de mesure et de commande respectivement
 $$
 \begin{array}{ccc}
 x =  \begin{pmatrix} z & \dot{z} \end{pmatrix} 
@@ -227,7 +238,7 @@ x =  \begin{pmatrix} z & \dot{z} \end{pmatrix}
 y= \begin{pmatrix}
  F_z \
 \end{pmatrix},   &
-u = \underline{0}
+u = \begin{pmatrix} \dot{z}_{robot} \\ F_{obj}\end{pmatrix} \\
 \end{array}
 $$
 
@@ -252,17 +263,17 @@ $$
         \begin{pmatrix} z  \\ \dot{z} \end{pmatrix} \\
         \vspace{0.5cm} \\
         \begin{pmatrix} F_z  \end{pmatrix}
-         &= \begin{pmatrix} 
-         k & 0
-	\end{pmatrix}.
-	 \begin{pmatrix} z \\  \dot{z} \end{pmatrix} \\
+         &= \begin{pmatrix} -k & 0 \end{pmatrix}.
+	 	\begin{pmatrix} z \\  \dot{z} \end{pmatrix} 
+	+ \begin{pmatrix} 0 & 1 \end{pmatrix}
+	 \begin{pmatrix} \dot{z}_{robot} \\ F_{obj}\end{pmatrix}\\
 \end{array}
 \right.
 $$
 
 Le choix a été fait ici de considérer l'accélération comme nulle car le déplacement du bras du robot est commandé en fonction de la force exercée sur le ressort, il n'en dépend pas directement.
 \\
-La matrice C est elle déterminée à partir d'une simple loi de Hooke: $F_z = k*d_z$. 
+La matrice C est elle déterminée à partir d'une simple loi de Hooke: $F_z = -k*d_z$. 
 
 \vspace{2cm}
 
@@ -356,13 +367,13 @@ $$V_{ii} = \sigma_{i}^{2} = Var(v_{i})$$
 Il ne reste plus qu'à calculer les écarts types associés à chaque erreur. L'intervalle de confiance à 95\% étant l'intervalle $[m-1.96\sigma, m+1.96\sigma]$ (m étant la moyenne) on a 
 $$
 \begin{array}{lrcl}
-	&\text{[}-\delta F_{z}*\bar{F}_{z} \rule{2mm}{0mm} ; \rule{2mm}{0mm} \delta F_{z}*\bar{F}_{z} \text{]} &=& \text{[} -2*1.96*\sigma_{F_{z}} \rule{2mm}{0pt}; \rule{2mm}{0pt} 2*1.96*\sigma_{F_{z}}  \text{]} \\
-	&\text{[} -\delta z_{asp} \rule{2mm}{0pt}; \rule{2mm}{0pt} \delta z_{asp} \text{]} &=& \text{[}-2*1.96*\sigma_{z_{asp}} \rule{2mm}{0pt}; \rule{2mm}{0pt} 2*1.96*\sigma_{z_{asp}}  \text{]} \\
-	&\text{[} -\delta z_{robot} \rule{2mm}{0pt}; \rule{2mm}{0pt} \delta z_{robot} \text{]} &=& \text{[}-2*1.96*\sigma_{z_{robot}} \rule{2mm}{0pt}; \rule{2mm}{0pt} 2*1.96*\sigma_{z_{robot}}  \text{]} \\
+	&\text{[}-\delta F_{z}*\bar{F}_{z} \rule{2mm}{0mm} ; \rule{2mm}{0mm} \delta F_{z}*\bar{F}_{z} \text{]} &=& \text{[} -1.96*\sigma_{F_{z}} \rule{2mm}{0pt}; \rule{2mm}{0pt}1.96*\sigma_{F_{z}}  \text{]} \\
+	&\text{[} -\delta z_{asp} \rule{2mm}{0pt}; \rule{2mm}{0pt} \delta z_{asp} \text{]} &=& \text{[}-1.96*\sigma_{z_{asp}} \rule{2mm}{0pt}; \rule{2mm}{0pt}1.96*\sigma_{z_{asp}}  \text{]} \\
+	&\text{[} -\delta z_{robot} \rule{2mm}{0pt}; \rule{2mm}{0pt} \delta z_{robot} \text{]} &=& \text{[}-1.96*\sigma_{z_{robot}} \rule{2mm}{0pt}; \rule{2mm}{0pt}1.96*\sigma_{z_{robot}}  \text{]} \\
 	\text{Soit} & & & \\
-	& \sigma_{F_{z}} &=& \\
-	& \sigma_{z_{asp}} &= & \\
-	&\sigma_{z_{robot}} &= & \\
+	& \sigma_{F_{z}} &=&  \frac{\delta F_{z}*\bar{F}_{z}}{1.96} \\
+	& \sigma_{z_{asp}} &= & \frac{\delta z_{asp}}{1.96}  \rule{0pt}{15pt}\\
+	&\sigma_{z_{robot}} &= & \frac{\delta z_{robot}}{1.96}  \rule{0pt}{15pt}\\
 \end{array}
 $$
 
@@ -374,11 +385,13 @@ V &= \begin{pmatrix}
 \sigma_{F_{z}}^{2} +  \sigma_{z_{asp}}^{2} +  \sigma_{z_{robot}}^{2} 
 \end{pmatrix} \\
 &=  \begin{pmatrix}
-X
-\end{pmatrix} \rule{0pt}{15pt}
+\frac{(\delta F_{z}*\bar{F}_{z})^{2}+\delta z_{asp}^{2}+\delta z_{robot}^{2}}{1.96^{2}}
+\end{pmatrix} \rule{0pt}{20pt} \\
+&= \begin{pmatrix} 5.857*10^{-3} \end{pmatrix} \rule{0pt}{20pt}
 \end{array}
 $$
 
+On remarque ici que la contribution de l'imprécision du robot à la matrice V est négligeable (de l'ordre de $10^{-8}$) devant l'imprécision du capteur. Le robot est en effet extrêmement précis. La contribution des aspérités de surfaces est également ici négligeable, mais il serait envisageable d'augmenter l'ordre de grandeur de ces aspérités si notre système est efficace.  
 
 
 
@@ -388,8 +401,8 @@ W est ensuite calculé de la même façon, en considérant que $\delta \dot{z}_{
 
 $$
 \begin{array}{rcl}
-	\text{[} -\delta \dot{z}_{robot} \rule{2mm}{0pt}; \rule{2mm}{0pt} \delta \dot{z}_{robot} \text{]} &=& \text{[}-2*1.96*\sigma_{dot{z}_{robot}} \rule{2mm}{0pt}; \rule{2mm}{0pt} 2*1.96*\sigma_{\dot{z}_{robot}}  \text{]} \\
-	\sigma_{\dot{z}_{robot}} &= & \\
+	\text{[} -\delta \dot{z}_{robot} \rule{2mm}{0pt}; \rule{2mm}{0pt} \delta \dot{z}_{robot} \text{]} &=& \text{[}-1.96*\sigma_{dot{z}_{robot}} \rule{2mm}{0pt}; \rule{2mm}{0pt} 1.96*\sigma_{\dot{z}_{robot}}  \text{]} \\
+	\sigma_{\dot{z}_{robot}} &= & \frac{\delta\dot{z}_{robot}}{1.96} \rule{0pt}{15pt} \\
 \end{array}
 $$
 
@@ -401,8 +414,9 @@ W &=
 \end{pmatrix} \\
 &=
 \begin{pmatrix}
-X
-\end{pmatrix} \rule{0pt}{15pt}
+(\frac{\delta\dot{z}_{robot}}{1.96})^{2}
+\end{pmatrix} \rule{0pt}{20pt} \\ 
+&= \begin{pmatrix} 1.041*10^{-8} \end{pmatrix} \rule{0pt}{20pt} \\ 
 \end{array}
 $$
 
@@ -420,40 +434,47 @@ $$
 \vspace{0.5cm}
 
 Toutes les données de l'équation ayant été définies, on peut désormais calculer les matrices associées au modèle discret
+\begin{changemargin}{-1.5cm}{0cm}
 $$
 \begin{array}{ccc}
     \begin{array}[t]{rcl}
     A_{d} &=& e^{Adt} \\
-    &=&\begin{pmatrix} 1 & e^{dt} \\ 1 & 1 \end{pmatrix}\\
-    && \\
-    C_{d} &=& C \\
-    	     &= &\begin{pmatrix} k & 0 \end{pmatrix} \\
-    \end{array} \rule{10mm}{0mm}
+    &=&e^{\begin{pmatrix} 0 & dt \\ 0 & 0 \end{pmatrix}}\\
+    &= & \begin{pmatrix} 1 & 0 \\ 0 & 1 \end{pmatrix} + \begin{pmatrix} 0 & dt \\ 0 & 0 \end{pmatrix}+ \begin{pmatrix} 0 & 0 \\ 0 & 0 \end{pmatrix} + ...  \rule{0pt}{20pt}\\
+    &=& \begin{pmatrix} 1 & dt \\ 0 & 1 \end{pmatrix}  \rule{0pt}{25pt}\\ 
+    
+    \end{array} \rule{8mm}{0mm}
 
     \begin{array}[t]{rcl}
-    B_{d} &=& \int_{0}^{dt} e^{Av}D \, \mathrm{d}v \\
-    	     &=& D \text{[}\frac{e^{Av}}{A}\text{]}_{0}^{dt} \rule{0pt}{15pt}\\
-    	     &=& D\frac{e^{Adt}-1}{A} \rule{0pt}{15pt} \\
-	     &=&\\
+    B_{d} &=& \int_{0}^{dt} e^{Av}B \, \mathrm{d}v \\
+%    	     &=& \int_{0}^{{dt} }\begin{pmatrix} 1 & dt \\ 0 & 1 \end{pmatrix} \, \mathrm{d}v \rule{0pt}{15pt}\\
+%    	     &=& D\frac{e^{Adt}-1}{A} \rule{0pt}{15pt} \\
+	     &=& 0 \rule{0pt}{20pt}\\
+    && \rule{0pt}{20pt}\\
+    C_{d} &=& C \\
+    	     &= &\begin{pmatrix} -k & 0 \end{pmatrix} \rule{0pt}{20pt} \\
     \end{array} \rule{10mm}{0mm}
 
     \begin{array}[t]{rcl}
     W_{d} &=& dtMWM^{T} \\
-    &=&\\
-    && \\
+    &=& \begin{pmatrix} (\frac{\delta\dot{z}_{robot}}{1.96})^{2} *dt  & 0 \\ 0 & 0 \end{pmatrix} \rule{0pt}{20pt}\\
+    && \rule{0pt}{20pt} \\
     V_{d} &=& \frac{V}{dt} \\
-    &=&\\
+    &=& \begin{pmatrix}	\frac{(\delta F_{z}*\bar{F}_{z})^{2}+\delta z_{asp}^{2}+\delta z_{robot}^{2}}{1.96^{2}*dt}	\end{pmatrix} \rule{0pt}{20pt}\\
     \end{array}
 \end{array} 
 $$
+
+\end{changemargin}
+\vspace{0.5cm}
 
 Et on peut calculer la matrice d'erreur P à partir de l'équation de Ricatti discrète. 
 $$ P_{p} =  A_{d}P_{p}A_{d}^{T} -A_{d}P_{p}C_{d}^{T}\big(C_{d}P_{p}C_{d}^{T}+V_{d}\big)^{-1}C_{d}P_{p}A_{d}^{T}  + M_{d}W_{d}M_{d}^{T} $$
 
 Une résolution numérique nous donne 
 $$
-P = \begin{pmatrix} 0 & 0 \\
-	0 & 0 
+P_{p} = \begin{pmatrix} 2.524*10^{-9} & 9.032*10^{-25}\\
+	 9.032*10^{-25} & 0 
 	\end{pmatrix} 
 $$
 
@@ -488,15 +509,20 @@ M_y &= &F_x*H &\\
 \end{array}
 $$
 
-L'objectif force devant désormais être mesuré selon la nouvelle normale à la surface, il convient de corriger en amont la valeur de $F_z$ injectée dans le filtre. 
+L'objectif force devant désormais être mesuré selon la nouvelle normale à la surface, il convient de corriger la matrice D de l'équation de mesure.
 On détermine tout d'abord $\alpha$ grâce aux données du capteur:
-$$ \alpha = \arctan(\frac{F_{x_c}}{F_{z_c}}) $$
+$$ \alpha = \arctan(\frac{F_{x}}{F_{z}}) $$
 On a 
 $$
 \begin{array}{lll}
-F_{N_c} &=& \frac{F_{z_c}}{cos(\alpha)}  \\
-F_N &=& F_{N_c}-F_{obj} \\
-F_z &=& F_{z_c}-F_{obj}cos(\alpha)
+F_{z} = -k \delta z + F_{obj} cos(\alpha)
+\end{array}
+$$
+
+soit 
+$$
+\begin{array}{lll}
+D &=& \begin{pmatrix} 0 & \cos(\alpha) \end{pmatrix} \\ 
 \end{array}
 $$
 
@@ -505,17 +531,14 @@ Pour cela, on prend désormais en compte un vecteur commande u correspondant à 
 On pose donc
 $$ 
 \begin{array}{lll}
-u &=& (\dot{x}_{robot}) \\
-B &=& \begin{pmatrix}
-\sin(\alpha)\\
-0
-\end{pmatrix} \\
+u &=& \begin{pmatrix} \dot{z}_{robot} \\ F_{obj}\end{pmatrix} \\
+B &=& \begin{pmatrix}	\sin(\alpha) & 0 \\ 0 & 0  \end{pmatrix} \rule{0pt}{20pt}\\
 \end{array}
 $$
 
 
 
-\noindent La matrice P n'est ici pas modifiée, seule l'équation du filtre est impactée.
+\noindent Les matrices V et W sont modifiées car une nouvelle source d'imprécision est apporté par l'introduction du paramètre alpha. 
 
 
 \subsection{Modèle 2D avec prise en compte du frottement}
