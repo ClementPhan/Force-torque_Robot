@@ -5,18 +5,18 @@
 #include "NetworkServices.hpp"
 #include <ws2tcpip.h>
 #include <stdio.h> 
-#include "NetworkData.hpp"
 
 // size of our buffer
 #define DEFAULT_BUFLEN 512
 // port to connect sockets through 
 #define DEFAULT_PORT "49151"
+#define DEFAULT_PORT_UDP "49152"
 // Need to link with Ws2_32.lib, Mswsock.lib, and Advapi32.lib
 #pragma comment (lib, "Ws2_32.lib")
 #pragma comment (lib, "Mswsock.lib")
 #pragma comment (lib, "AdvApi32.lib")
 
-class ClientNetwork
+class ClientTCP
 {
 
 public:
@@ -28,9 +28,10 @@ public:
     SOCKET ConnectSocket;
 
     // ctor/dtor
-    ClientNetwork(void);
-    ~ClientNetwork(void);
+    ClientTCP(void);
+    ~ClientTCP(void);
 
 	int receivePackets(char *);
+	int sendMessage(char * message, int messageSize);
 };
 

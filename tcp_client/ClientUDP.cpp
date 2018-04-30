@@ -1,8 +1,8 @@
 //#include "StdAfx.h"
-#include "../tcp_client/ClientNetwork.hpp"
+#include "ClientUDP.hpp"
 
 
-ClientNetwork::ClientNetwork(void)
+ClientUDP::ClientUDP(char* address, char* port) 
 {
     // create WSADATA object
     WSADATA wsaData;
@@ -22,18 +22,14 @@ ClientNetwork::ClientNetwork(void)
         printf("WSAStartup failed with error: %d\n", iResult);
         exit(1);
     }
-
-
-
     // set address info
     ZeroMemory( &hints, sizeof(hints) );
     hints.ai_family = AF_UNSPEC;
-    hints.ai_socktype = SOCK_STREAM;
-    hints.ai_protocol = IPPROTO_TCP;  //TCP connection!!!
-
+	hints.ai_socktype = SOCK_DGRAM; // For UDP
+	hints.ai_protocol = IPPROTO_UDP;  //UDP connection!!!
 	
     //resolve server address and port 
-    iResult = getaddrinfo("200.200.200.99", DEFAULT_PORT, &hints, &result);
+	iResult = getaddrinfo(address, port, &hints, &result);
 
     if( iResult != 0 ) 
     {
@@ -56,9 +52,10 @@ ClientNetwork::ClientNetwork(void)
         }
 
         // Connect to server.
-        iResult = connect( ConnectSocket, ptr->ai_addr, (int)ptr->ai_addrlen);
+		iResult = connect( ConnectSocket, ptr->ai_addr, (int)ptr->ai_addrlen);
 
-        if (iResult == SOCKET_ERROR)
+        //if (iResult == SOCKET_ERROR)
+		if(iResult !=0) // For UDP
         {
             closesocket(ConnectSocket);
             ConnectSocket = INVALID_SOCKET;
@@ -66,12 +63,8 @@ ClientNetwork::ClientNetwork(void)
         }
     }
 
-
-
     // no longer need address info for server
     freeaddrinfo(result);
-
-
 
     // if connection failed
     if (ConnectSocket == INVALID_SOCKET) 
@@ -80,32 +73,36 @@ ClientNetwork::ClientNetwork(void)
         WSACleanup();
         exit(1);
     }
+}
 
-	// Set the mode of the socket to be nonblocking
-    u_long iMode = 1;
 
-    iResult = ioctlsocket(ConnectSocket, FIONBIO, &iMode);
-    if (iResult == SOCKET_ERROR)
+ClientUDP::ClientUDP(void)
+{
+	ClientUDP(DEFAULT_ADDRESS_UDP, DEFAULT_PORT_UDP);
+}
+
+ClientUDP::~ClientUDP(void)
+{
+}
+
+int ClientUDP::receivePackets(char * recvbuf) 
+{
+    iResult = NetworkServices::receiveMessage(ConnectSocket, recvbuf, sizeof(recvbuf));
+
+    if ( iResult == 0 )
     {
-        printf("ioctlsocket failed with error: %d\n", WSAGetLastError());
+        printf("Connection closed\n");
         closesocket(ConnectSocket);
         WSACleanup();
-        exit(1);        
+        exit(1);
     }
 
-	//disable nagle
-    char value = 1;
-    setsockopt( ConnectSocket, IPPROTO_TCP, TCP_NODELAY, &value, sizeof( value ) );
+    return iResult;
 }
 
-
-ClientNetwork::~ClientNetwork(void)
+int ClientUDP::sendMessage(char * message, int messageSize) 
 {
-}
-
-int ClientNetwork::receivePackets(char * recvbuf) 
-{
-    iResult = NetworkServices::receiveMessage(ConnectSocket, recvbuf, MAX_PACKET_SIZE);
+    iResult = NetworkServices::sendMessage(ConnectSocket, message, messageSize);
 
     if ( iResult == 0 )
     {
