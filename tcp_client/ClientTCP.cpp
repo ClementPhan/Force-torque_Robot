@@ -1,8 +1,12 @@
 //#include "StdAfx.h"
 #include "ClientTCP.hpp"
 
-
 ClientTCP::ClientTCP(void)
+{
+	ClientTCP(DEFAULT_ADDRESS_TCP, DEFAULT_PORT_TCP);
+}
+
+ClientTCP::ClientTCP(const char* address, const char* port)
 {
     // create WSADATA object
     WSADATA wsaData;
@@ -28,14 +32,12 @@ ClientTCP::ClientTCP(void)
     // set address info
     ZeroMemory( &hints, sizeof(hints) );
     hints.ai_family = AF_UNSPEC;
-    //hints.ai_socktype = SOCK_STREAM;
-    //hints.ai_protocol = IPPROTO_TCP;  //TCP connection!!!
-	hints.ai_socktype = SOCK_DGRAM; // For UDP
-	hints.ai_protocol = IPPROTO_UDP;  //UDP connection!!!
+    hints.ai_socktype = SOCK_STREAM;
+    hints.ai_protocol = IPPROTO_TCP;  //TCP connection!!!
 	
 	
     //resolve server address and port 
-    iResult = getaddrinfo("200.200.200.99", DEFAULT_PORT, &hints, &result);
+    iResult = getaddrinfo(address, port, &hints, &result);
 
     if( iResult != 0 ) 
     {
@@ -58,16 +60,14 @@ ClientTCP::ClientTCP(void)
         }
 
         // Connect to server.
-        //iResult = connect( ConnectSocket, ptr->ai_addr, (int)ptr->ai_addrlen);
 		iResult = connect( ConnectSocket, ptr->ai_addr, (int)ptr->ai_addrlen);
 
         //if (iResult == SOCKET_ERROR)
-		if(iResult !=0) // For UDP
+		if(iResult !=0)
         {
             closesocket(ConnectSocket);
             ConnectSocket = INVALID_SOCKET;
-            //printf ("The server is down... did not connect");
-			printf ("Could not bind UDP socket");
+            printf ("The server is down... did not connect");
         }
     }
 
