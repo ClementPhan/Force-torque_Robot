@@ -40,3 +40,9 @@ Makefile
 #XCode buid and debug files
 *.build/
 *.xcodeproj/
+
+#Latex build and debug files
+*.aux
+*.out
+*.log
+*.synctex.gz
