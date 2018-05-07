@@ -4,6 +4,11 @@
 
 ClientTCP::ClientTCP(void)
 {
+	ClientTCP(DEFAULT_ADDRESS_TCP, DEFAULT_PORT_TCP);
+}
+
+ClientTCP::ClientTCP(const char* address, const char* port)
+{
     // create WSADATA object
     WSADATA wsaData;
 
@@ -28,14 +33,12 @@ ClientTCP::ClientTCP(void)
     // set address info
     ZeroMemory( &hints, sizeof(hints) );
     hints.ai_family = AF_UNSPEC;
-    //hints.ai_socktype = SOCK_STREAM;
-    //hints.ai_protocol = IPPROTO_TCP;  //TCP connection!!!
-	hints.ai_socktype = SOCK_DGRAM; // For UDP
-	hints.ai_protocol = IPPROTO_UDP;  //UDP connection!!!
+    hints.ai_socktype = SOCK_STREAM;
+    hints.ai_protocol = IPPROTO_TCP;  //TCP connection!!!
 	
 	
     //resolve server address and port 
-    iResult = getaddrinfo("200.200.200.99", DEFAULT_PORT, &hints, &result);
+    iResult = getaddrinfo(address, port, &hints, &result);
 
     if( iResult != 0 ) 
     {
@@ -58,16 +61,14 @@ ClientTCP::ClientTCP(void)
         }
 
         // Connect to server.
-        //iResult = connect( ConnectSocket, ptr->ai_addr, (int)ptr->ai_addrlen);
 		iResult = connect( ConnectSocket, ptr->ai_addr, (int)ptr->ai_addrlen);
 
         //if (iResult == SOCKET_ERROR)
-		if(iResult !=0) // For UDP
+		if(iResult !=0)
         {
             closesocket(ConnectSocket);
             ConnectSocket = INVALID_SOCKET;
-            //printf ("The server is down... did not connect");
-			printf ("Could not bind UDP socket");
+            printf ("The server is down... did not connect\n");
         }
     }
 
@@ -87,7 +88,6 @@ ClientTCP::ClientTCP(void)
     }
 
 	
-	/*
 	// Set the mode of the socket to be nonblocking
     u_long iMode = 1;
 
@@ -99,7 +99,6 @@ ClientTCP::ClientTCP(void)
         WSACleanup();
         exit(1);        
     }
-	*/
 }
 
 
@@ -107,9 +106,9 @@ ClientTCP::~ClientTCP(void)
 {
 }
 
-int ClientTCP::receivePackets(char * recvbuf) 
+int ClientTCP::recvMessage(char * recvbuf, int buflen) 
 {
-    iResult = NetworkServices::receiveMessage(ConnectSocket, recvbuf, sizeof(recvbuf));
+    iResult = NetworkServices::receiveMessage(ConnectSocket, recvbuf, buflen);
 
     if ( iResult == 0 )
     {
@@ -135,4 +134,19 @@ int ClientTCP::sendMessage(char * message, int messageSize)
     }
 
     return iResult;
+}
+
+int ClientTCP::sendMessage(const char * message, int messageSize)
+{
+	iResult = NetworkServices::sendMessage(ConnectSocket, message, messageSize);
+
+	if (iResult == 0)
+	{
+		printf("Connection closed\n");
+		closesocket(ConnectSocket);
+		WSACleanup();
+		exit(1);
+	}
+
+	return iResult;
 }
