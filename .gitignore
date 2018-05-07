@@ -45,3 +45,4 @@ Makefile
 *.aux
 *.out
 *.log
+*.synctex.gz
