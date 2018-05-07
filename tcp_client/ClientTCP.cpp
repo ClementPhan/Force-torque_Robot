@@ -67,7 +67,7 @@ ClientTCP::ClientTCP(const char* address, const char* port)
         {
             closesocket(ConnectSocket);
             ConnectSocket = INVALID_SOCKET;
-            printf ("The server is down... did not connect");
+            printf ("The server is down... did not connect\n");
         }
     }
 
@@ -87,7 +87,6 @@ ClientTCP::ClientTCP(const char* address, const char* port)
     }
 
 	
-	/*
 	// Set the mode of the socket to be nonblocking
     u_long iMode = 1;
 
@@ -99,7 +98,6 @@ ClientTCP::ClientTCP(const char* address, const char* port)
         WSACleanup();
         exit(1);        
     }
-	*/
 }
 
 
@@ -107,9 +105,9 @@ ClientTCP::~ClientTCP(void)
 {
 }
 
-int ClientTCP::receivePackets(char * recvbuf) 
+int ClientTCP::recvMessage(char * recvbuf, int buflen) 
 {
-    iResult = NetworkServices::receiveMessage(ConnectSocket, recvbuf, sizeof(recvbuf));
+    iResult = NetworkServices::receiveMessage(ConnectSocket, recvbuf, buflen);
 
     if ( iResult == 0 )
     {

@@ -14,6 +14,7 @@
 #pragma comment (lib, "Mswsock.lib")
 #pragma comment (lib, "AdvApi32.lib")
 
+
 class ClientTCP
 {
 
@@ -30,7 +31,7 @@ public:
 	ClientTCP(const char * address, const char * port);
     ~ClientTCP(void);
 
-	int receivePackets(char *);
+	int recvMessage(char * recvbuf, int buflen);
 	int sendMessage(char * message, int messageSize);
 	int sendMessage(const char * message, int messageSize);
 };

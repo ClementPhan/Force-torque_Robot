@@ -12,7 +12,28 @@ int donnees_capteur[6];
 
 int main(int argc, char **argv)
 {
-	robot_client = new Robot_Client("127.0.0.1", "5000");
-	robot_client->sendZandVChange(300000000, 5000000);
+	robot_client = new Robot_Client("192.168.1.99", "5000");
+	Sleep(1000);
+	
+	printf("%i\n", robot_client->getRobotStatus());
+	int i = 0;
+	while (i < 10)
+	{
+		
+		if (robot_client->readyToSend())
+		{
+			robot_client->sendZChange( i );
+			printf("sent\n");
+			i++;
+		}
+		
+	}
+	while (true)
+	{
+		printf("wait");
+	}
+
+	
 	Sleep(10000);
+	printf("%i\n", robot_client->getRobotStatus());
 }
