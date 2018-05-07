@@ -23,8 +23,10 @@ int main(int argc, char* argv[]) {
     // List of noisy position measurements (y)
     Eigen::MatrixXd measurements(3,3);
     measurements << 0, 0, 20,
-                    0, 0, 21,
+                    0, 0, 22,
                     0, 0, 20;
+    
+    measurements = measurements*pow(10,6);
     
     Eigen::VectorXd y(3);
 

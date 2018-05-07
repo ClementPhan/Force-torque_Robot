@@ -52,6 +52,8 @@ void KalmanFilter::init() {
 }
 
 void KalmanFilter::update(Eigen::VectorXd y) {
+    y = y*pow(10,-6); // on enlève le gain d'un million
+    
     c = 2; //why necessary ?
     double alpha;
     if(y(2) != 0){
@@ -71,8 +73,8 @@ void KalmanFilter::update(Eigen::VectorXd y) {
     Eigen::MatrixXd D(m,c);
     D << 0, cos(alpha);
     
-    /*Eigen::MatrixXd K(2,1);
-    K << 0, 0;*/
+    Eigen::MatrixXd K(2,1);
+    K << 1, 0;
     
     cout << "C" << C << endl;
     
@@ -81,7 +83,8 @@ void KalmanFilter::update(Eigen::VectorXd y) {
     
     x_hat_new = A * x_hat + B*u; //prédiction de l'état à t+1 x(k+1|k). u nul !
     P = A*P*A.transpose() + W; // 2.24 prédiction de l'erreur à t+1 P(k+1|k)
-    K = P*C.transpose()*(C*P*C.transpose() + V).inverse(); // e W 2.27 donne K(t+1)
+    //K = P*C.transpose()*(C*P*C.transpose() + V).inverse(); // e W 2.27 donne K(t+1)
+    cout << "K" << K << endl;
     x_hat_new += A*K*Fz - A*K*(C*x_hat + D*u); // x(k+1|k+1) état estimé à t+1 //idem u nul !
     P = (I - K*C)*P; // P(k+1|k+1) on calcule l'erreur d'estimation
     x_hat = x_hat_new;
@@ -138,14 +141,14 @@ KalmanFilter KalmanFilter::setRobotKalman(double stepTime, double ForceObjective
     double zrobot = 0.2*pow(10,-3);
     
     
-    V << (Fz*dFz + zasp*zasp + zrobot*zrobot)/(1.96*1.96*dt);
-    W << zrobot*zrobot/(1.96*1.96), 0,
+    V << (Fz*dFz)/(1.96*1.96*dt);
+    W << (2*pow(zrobot*k, 2) + pow(zasp*k, 2))/(1.96*1.96), 0,
     0, 0;
     
     
     // Calcul de P solution de l'équation de Ricatti discrète
-    P <<  2.52438142*pow(10,-9) ,   9.03184257*pow(10,-25),
-        9.03184257*pow(10,-25), 0;
+    P <<  2.70229612*pow(10,-0) ,   3.40417948*pow(10,-22),
+        3.40417948*pow(10,-22), 0;
 
     
     /*cout << "A: \n" << A << endl;

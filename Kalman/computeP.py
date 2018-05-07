@@ -3,7 +3,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import scipy.linalg
 
-k = 3.1*pow(10,3); 
+k = 3.1*pow(10,3);
     
 L = 30.5*pow(10,-3); #rayon bille 6.5mm
 
@@ -50,9 +50,9 @@ A = np.array([0,1,
               0, 0], float).reshape(2,2);
 C = np.array([k, 0],float).reshape(1,2);
 
-V = np.array([(pow(PFz*Fz, 2)+ pow(zasp, 2) + pow(zrobot, 2))/(pow(1.96,2))], float).reshape(1,1)
+V = np.array([(pow(PFz*Fz, 2) + pow(zasp*k, 2) + pow(zrobot*k, 2) )/(pow(1.96,2))], float).reshape(1,1)
              
-W = np.array([zrobot*zrobot/(1.96*1.96)]).reshape(1,1)
+W = np.array([(pow(zrobot, 2))/(1.96*1.96)]).reshape(1,1)
              
 M = np.array([1,
              0], float).reshape(2,1)
