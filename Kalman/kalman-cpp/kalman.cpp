@@ -51,7 +51,7 @@ void KalmanFilter::init() {
     initialized = true;
 }
 
-void KalmanFilter::update(Eigen::VectorXd y) {
+double KalmanFilter::update(Eigen::VectorXd y) {
     y = y*pow(10,-6); // on enlève le gain d'un million
     
     c = 2; //why necessary ?
@@ -90,6 +90,8 @@ void KalmanFilter::update(Eigen::VectorXd y) {
     x_hat = x_hat_new;
     
     t += dt;
+    
+    return x_hat(0);
 
 }
 

@@ -57,7 +57,7 @@ public:
     
     /* Update the estimated state based on measured values. The
      time step is assumed to remain constant.*/
-    void update(Eigen::VectorXd y);
+    double update(Eigen::VectorXd y);
     
     // Return the current state or time.
     Eigen::VectorXd getState() { return x_hat; };
