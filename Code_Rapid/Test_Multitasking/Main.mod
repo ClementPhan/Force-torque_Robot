@@ -140,6 +140,7 @@ MODULE Tache_Principale
         write_offset.z := offset;
 
         TPWrite "On corrige"\Num:=offset;
+        TPWrite "Ratio vitesse"\Num:=r;
         CorrWrite z_id, write_offset;
 
         RMQEmptyQueue;
