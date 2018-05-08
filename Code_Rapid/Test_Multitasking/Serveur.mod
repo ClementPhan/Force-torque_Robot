@@ -6,7 +6,7 @@ VAR socketdev clientSocket;
 VAR socketdev serverSocket;
 
 !PERS string ipController:= "192.168.125.1"; !robot default IP
-PERS string ipController:= "127.0.0.1"; !local IP for testing in simulation
+PERS string ipController:= "192.168.1.99"; !local IP for testing in simulation
 PERS num serverPort:= 5000;
 
 PERS tasks task_list1{2} := [["TestServeur"], ["T_ROB1"]];
@@ -16,13 +16,13 @@ VAR string RATIO:="100";
 
 CONST num Gain:=1000000;
 
-PERS bool flag:=FALSE;
+PERS bool flag:=TRUE;
 
 VAR num buffer:=0.5;
 
 VAR clock timer2;
 VAR num time2;
-VAR num TAU:=5;
+VAR num TAU:=60;
 
 VAR num msg_ok:=-1;
 
@@ -48,12 +48,9 @@ PROC ServerCreateAndConnect(string ip, num port)
             TPWrite "SERVER: Try reconnecting.";
         ENDIF
 
-        !//Wait 0.5 seconds for the next reconnection
-        WaitTime 0.5;
-
     ENDWHILE
 
-    SocketSend clientSocket \Str:="Connected";
+    SocketSend clientSocket \Str:="Ready";
     TPWrite "SERVER: Connected to IP " + clientIP;
 
 ENDPROC
@@ -77,8 +74,6 @@ PROC ParseMsg(string msg)
     VAR num ratio_int;
 
     ! Find the end character
-
-    TPWrite msg;
 
     length:=StrMatch(msg,1,"#");
 
@@ -131,6 +126,10 @@ PROC ParseMsg(string msg)
                 subString := StrPart(msg,ind,newInd - ind - 1);
                 Conversion:=StrToVal(subString,ratio_int);
 
+            ELSE
+
+                ratio_int:=100000000;
+
             ENDIF
 
         ENDIF
@@ -142,9 +141,6 @@ ratio_int:=ratio_int/Gain;
 
 OFFSET:=ValToStr(offset_int);
 RATIO:=ValToStr(ratio_int);
-
-TPWrite OFFSET;
-TPWrite RATIO;
 
 ENDPROC
 
@@ -179,7 +175,7 @@ PROC main()
         SocketReceive clientSocket \Str:=receivedString \Time:=WAIT_MAX;
         ParseMsg receivedString;
         IF msg_ok>0 THEN
-            SocketSend clientSocket \Str := "Recu";
+            SocketSend clientSocket \Str := "Recvd";
 
             !Envoi du message RMQ
 
@@ -187,19 +183,21 @@ PROC main()
             MESSAGE:=OFFSET+" "+RATIO;
     		RMQSendMessage destination_slot, MESSAGE;
 
-            WaitTime buffer;
+            !WaitTime buffer;
 
             time2:=ClkRead(timer2);
             TPWrite ValtoStr(time2);
 
             IF time2>TAU THEN
                 flag:=FALSE;
-                SocketSend clientSocket \Str := "Stop";
+                SocketSend clientSocket \Str := "Stop!";
+                SocketClose clientSocket;
+                SocketClose serverSocket;
             ELSE
-                SocketSend clientSocket \Str := "Suite";
+                SocketSend clientSocket \Str := "Ready";
             ENDIF
         ELSE
-            SocketSend clientSocket \Str := "MsgError";
+            SocketSend clientSocket \Str := "Error";
         ENDIF
 
     ENDWHILE
