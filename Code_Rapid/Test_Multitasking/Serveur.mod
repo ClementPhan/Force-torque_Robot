@@ -18,7 +18,9 @@ CONST num Gain:=1000000;
 
 PERS bool flag:=TRUE;
 
-VAR num buffer:=0.5;
+VAR num resolution := 10;
+VAR num speed:=100;
+VAR num buffer;
 
 VAR clock timer2;
 VAR num time2;
@@ -138,6 +140,7 @@ PROC ParseMsg(string msg)
 
 offset_int:=offset_int/Gain;
 ratio_int:=ratio_int/Gain;
+speed:=speed*ratio_int;
 
 OFFSET:=ValToStr(offset_int);
 RATIO:=ValToStr(ratio_int);
@@ -183,7 +186,8 @@ PROC main()
             MESSAGE:=OFFSET+" "+RATIO;
     		RMQSendMessage destination_slot, MESSAGE;
 
-            !WaitTime buffer;
+            buffer:=resolution/speed;
+            WaitTime buffer;
 
             time2:=ClkRead(timer2);
             TPWrite ValtoStr(time2);
