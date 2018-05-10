@@ -17,11 +17,12 @@ void runLoop2(KalmanFilter a){
 int main(int argc, char ** argv) {
 
     double dt = 1.0/30.0;
+	double forceObj = 5; // 5 newtons
     
     
     // Initializing the Kalman filter characteristics
     KalmanFilter Kf;
-    Kf = Kf.setRobotKalman(dt);
+    Kf = Kf.setRobotKalman(dt, forceObj);
 
     // Initializing global variables
     MultiThreading global;
@@ -40,6 +41,7 @@ int main(int argc, char ** argv) {
     // We launch the processus and will run Kalman every dt 
     clock_t t0;
     t0 = clock(); // initial time
+	
 }
 
 
