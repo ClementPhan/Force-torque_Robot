@@ -5,26 +5,45 @@
 //  Created by Sarah Curtit on 25/03/2018.
 //
 
+#pragma once
+
 #include <Eigen/Dense>
 #include <mutex>
 
-#include "kalman.hpp"
+#include "../Kalman/kalman-cpp/kalman.hpp"
 #include "sending.hpp"
 #include "../tcp_client/FT_Client.hpp"
+#include "../tcp_client/Robot_Client.hpp"
 
 using namespace std;
 
-#pragma once
+
+template <typename T>
+struct shared_data{
+	mutex m;
+	T data;
+};
+
+
 
 class MultiThreading{
 private:
+
+	// Networking
+
+	Robot_Client * robot_client;
+	FT_Client* client_capteur;
     
-//shared variables
-Eigen::VectorXd rotation;
-Eigen::VectorXd mesures;
-Eigen::VectorXd displacement;
-Eigen::VectorXd objective;
-mutex m;
+	// Shared variables
+	shared_data<Eigen::VectorXd> rotation;
+	shared_data<Eigen::VectorXd> mesures;
+	shared_data<Eigen::VectorXd> displacement;
+	shared_data<Eigen::VectorXd> objective;
+
+	shared_data<double> correction;
+
+	// Other mutexes
+	mutex m_prompt; // For cout or other prompt actions
     
 public:
 
