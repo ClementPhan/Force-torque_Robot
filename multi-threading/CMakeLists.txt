@@ -10,5 +10,13 @@ if(CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
 endif()
 
-set(SOURCE_FILES kalman.cpp initKalman.cpp main.cpp multiThreading.cpp sending.cpp ../tcp_client/ClientTCP.cpp ../tcp_client/ClientUDP.cpp ../tcp_client/FT_Client.cpp ../tcp_client/NetworkServices.cpp ../tcp_client/Robot_Client.cpp)
+set(SOURCE_FILES ../Kalman/kalman-cpp/kalman.cpp 
+					main.cpp 
+					multiThreading.cpp 
+					sending.cpp 
+					../tcp_client/ClientTCP.cpp 
+					../tcp_client/ClientUDP.cpp 
+					../tcp_client/FT_Client.cpp 
+					../tcp_client/NetworkServices.cpp 
+					../tcp_client/Robot_Client.cpp)
 add_executable(main ${SOURCE_FILES})
