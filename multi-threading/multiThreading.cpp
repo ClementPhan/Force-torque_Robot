@@ -98,10 +98,8 @@ void MultiThreading::runKalman(KalmanFilter Kf){
 void MultiThreading::acquireData(){
 	client_capteur = new FT_Client();
 	int donnees_capteur[6] = { 0, 0, 0, 0, 0, 0 };  // Données avec un gain de 1 000 000
-	std::chrono::high_resolution_clock::time_point target_time;
 	int i=0;
     while(true){
-		target_time = std::chrono::steady_clock::now() + std::chrono::milliseconds(10);
 		i +=1;
 		client_capteur->update(donnees_capteur);
 		{
@@ -112,7 +110,6 @@ void MultiThreading::acquireData(){
 			std::lock_guard<std::mutex> guard(mesures.m);
 			mesures.data << donnees_capteur[0], donnees_capteur[1], donnees_capteur[2], donnees_capteur[3], donnees_capteur[4], donnees_capteur[5];
 		}
-		std::this_thread::sleep_until(target_time);
     }
 }
 
@@ -121,7 +118,7 @@ void MultiThreading::sendData(){
 	robot_client = new Robot_Client("192.168.1.99", "5000");
     int i = 0;
 	std::chrono::high_resolution_clock::time_point target_time;
-    while(true){
+    while(true){													  
         i +=1;
 		target_time = std::chrono::steady_clock::now() + std::chrono::milliseconds(10);
 		if (robot_client->readyToSend())
