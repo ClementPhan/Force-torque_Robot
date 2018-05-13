@@ -8,7 +8,7 @@
 const int recvbuflen = 25;
 
 // Robot status. Note that msgError indicates a badly formatted message, untreated by the robot while networkError is a non-treatable message recieved by this client.
-enum status { unconected, readyToRecieve, msgRecieved, msgError, correctionEnd, networkError }; /* State of the robot "msgrecieved" means that another correction has to wait to be given */
+enum status { unconected, readyToRecieve,waitingForResponse, msgRecieved, msgError, correctionEnd, networkError }; /* State of the robot "msgrecieved" means that another correction has to wait to be given */
 
 class Robot_Client
 {

@@ -26,18 +26,12 @@ bool Robot_Client::readyToSend(void)
 		msgcheck();
 		switch (robotStatus)
 		{
-		case unconected:
-			return false;
 		case readyToRecieve:
 			return true;
-		case msgRecieved:
-			return false;
-		case correctionEnd:
-			return false;
-		case networkError:
-			return false;
+			break;
 		default:
 			return false;
+			break;
 		}
 	}
 }
@@ -56,6 +50,7 @@ int Robot_Client::sendZChange(int ZChange)
 		printf("Bad mesage send\n");
 		return 1;
 	}
+	robotStatus = waitingForResponse;
 	return 0;
 }
 
@@ -73,6 +68,7 @@ int Robot_Client::sendVChange(int VChange)
 		printf("Bad mesage send\n");
 		return 1;
 	}
+	robotStatus = waitingForResponse;
 	return 0;
 }
 
@@ -90,6 +86,7 @@ int Robot_Client::sendZandVChange(int ZChange, int VChange)
 		printf("Bad mesage send\n");
 		return 1;
 	}
+	robotStatus = waitingForResponse;
 	return 0;
 }
 
