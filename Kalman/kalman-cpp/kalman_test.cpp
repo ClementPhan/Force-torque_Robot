@@ -13,7 +13,7 @@ int main(int argc, char* argv[]) {
     int c = 2;
     
     float dt = 0.001;
-    double Fobj = 20;
+    double Fobj = 0;
 
     //initialize Filter
     KalmanFilter kf;

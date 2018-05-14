@@ -84,7 +84,7 @@ double KalmanFilter::update(Eigen::VectorXd y) {
     //K = P*C.transpose()*(C*P*C.transpose() + V).inverse(); // e W 2.27 donne K(t+1)
     x_hat_new += A*K*Fz - A*K*(C*x_hat + D*u); // x(k+1|k+1) état estimé à t+1 //idem u nul !
     P = (I - K*C)*P; // P(k+1|k+1) on calcule l'erreur d'estimation
-    x_hat = x_hat_new;
+    x_hat += x_hat_new;
     
     t += dt;
     
