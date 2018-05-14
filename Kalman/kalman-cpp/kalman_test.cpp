@@ -7,7 +7,6 @@ using namespace std;
 
 int main(int argc, char* argv[]) {
     
-    cout << "hello" << endl;
     
     int n = 2;
     int m = 1;
@@ -23,7 +22,7 @@ int main(int argc, char* argv[]) {
     // List of noisy position measurements (y)
     Eigen::MatrixXd measurements(3,3);
     measurements << 0, 0, 20,
-                    0, 0, 22,
+                    0, 0, 23.1,
                     0, 0, 20;
     
     measurements = measurements*pow(10,6);
@@ -40,8 +39,9 @@ int main(int argc, char* argv[]) {
         cout << y << endl;
         kf.update(y);
         
-        cout << "t = " << t << ", " << "y[" << i << "] = " << y.transpose()
+        cout << "t = " << t << ", " << "y[" << i << "] = " << y.transpose() << endl 
         << ", x_hat[" << i << "] = " << kf.getState().transpose() << endl;
+        cout <<""<<endl;
     }
     
     return 0;
