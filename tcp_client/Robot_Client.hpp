@@ -34,7 +34,7 @@ public:
 	// Send commands to the robot.
 	// These will not execute unless robotStatus is read to be "readyToRecieve"
 	// Call msgcheck to update robotStatus
-	int sendZChange(int Zchange); // Send message to change z coordinate
-	int sendVChange(int VChange); // Send message to change speed
-	int sendZandVChange(int Zchange, int VChange); // Send message to change z coordinate and speed
+	int sendZChange(long Zchange); // Send message to change z coordinate
+	int sendVChange(long VChange); // Send message to change speed
+	int sendZandVChange(long Zchange, long VChange); // Send message to change z coordinate and speed
 };
