@@ -19,6 +19,7 @@ KalmanFilter::KalmanFilter(
                            double dt,
                            double L,
                            double Fobj,
+                           double k,
                            const Eigen::VectorXd& u,
                            const Eigen::MatrixXd& A,
                            const Eigen::MatrixXd& C,
@@ -26,7 +27,7 @@ KalmanFilter::KalmanFilter(
                            const Eigen::MatrixXd& V,
                            const Eigen::MatrixXd& P)
 : A(A), C(C), W(W), V(V), P0(P),
-m(C.rows()), n(A.rows()), dt(dt), Fobj(Fobj), L(L),u(u), initialized(false),
+m(C.rows()), n(A.rows()), dt(dt), Fobj(Fobj), L(L), k(k), u(u), initialized(false),
 I(n, n), x_hat(n), x_hat_new(n)
 {
     I.setIdentity();
@@ -39,8 +40,6 @@ void KalmanFilter::init(double t0, const Eigen::VectorXd& x0) {
     this->t0 = t0;
     t = t0;
     initialized = true;
-    
-    cout <<"init C" << C;
 }
 
 void KalmanFilter::init() {
@@ -74,9 +73,8 @@ double KalmanFilter::update(Eigen::VectorXd y) {
     D << 0, cos(alpha);
     
     Eigen::MatrixXd K(2,1);
-    K << 1, 0;
+    K << 0, 1/k;
     
-    cout << "C" << C << endl;
     
     if(!initialized)
         throw std::runtime_error("Filter is not initialized!");
@@ -84,7 +82,6 @@ double KalmanFilter::update(Eigen::VectorXd y) {
     x_hat_new = A * x_hat + B*u; //prédiction de l'état à t+1 x(k+1|k). u nul !
     P = A*P*A.transpose() + W; // 2.24 prédiction de l'erreur à t+1 P(k+1|k)
     //K = P*C.transpose()*(C*P*C.transpose() + V).inverse(); // e W 2.27 donne K(t+1)
-    cout << "K" << K << endl;
     x_hat_new += A*K*Fz - A*K*(C*x_hat + D*u); // x(k+1|k+1) état estimé à t+1 //idem u nul !
     P = (I - K*C)*P; // P(k+1|k+1) on calcule l'erreur d'estimation
     x_hat = x_hat_new;
@@ -111,9 +108,9 @@ KalmanFilter KalmanFilter::setRobotKalman(double stepTime, double ForceObjective
     Eigen::MatrixXd P(n,n);
     Eigen::VectorXd u(c);
     
-    double k = 3.1*pow(10,-3); // Spring's stiffness (N/mm)
+    k = 3.1*pow(10,3); // Spring's stiffness (N/m)
     
-    double L = 0.035; // Tool's length (mm)
+    L = 0.035; // Tool's length (mm)
     
     double g = 9.81; //
     
@@ -127,8 +124,8 @@ KalmanFilter KalmanFilter::setRobotKalman(double stepTime, double ForceObjective
     
     
     
-    A << 1, dt,
-        0, 1;
+    A << 0, 1,
+        0, 0;
     
     C << k, 0;
     
@@ -160,7 +157,7 @@ KalmanFilter KalmanFilter::setRobotKalman(double stepTime, double ForceObjective
      cout << "P: \n" << P << endl;*/
     
     // Construct the filter
-    KalmanFilter kf(dt, Fobj, L, u, A, C, W, V, P);
+    KalmanFilter kf(dt, Fobj, L, k, u, A, C, W, V, P);
     
     
     // Best guess of initial states
@@ -169,9 +166,9 @@ KalmanFilter KalmanFilter::setRobotKalman(double stepTime, double ForceObjective
     //rajouter initialisation nulle
     kf.init(0, x0);
     
-    std::cout << "hello" << endl;
     
-    return kf;
+    return kf; 
+
 }
 
 

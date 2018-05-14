@@ -32,6 +32,7 @@ public:
                  double dt,
                  double Fobj,
                  double L,
+                 double k, 
                  const Eigen::VectorXd& u,
                  const Eigen::MatrixXd& A, // matrice de doubles de taille non définie
                  const Eigen::MatrixXd& C,
@@ -83,6 +84,9 @@ private:
     
     // Lenght of tool (specific to the robot)
     double L;
+    
+    //stiffness of the tool
+    double k;
     
     // Command vector
     Eigen::VectorXd u;
