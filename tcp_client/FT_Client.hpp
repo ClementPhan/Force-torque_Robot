@@ -20,5 +20,5 @@ public:
 
 	int stopStream();
 
-	int update(int donnees_capteur[6]);
+	int update(int (&donnees_capteur)[6]);
 };
