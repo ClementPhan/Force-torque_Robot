@@ -36,7 +36,7 @@ bool Robot_Client::readyToSend(void)
 	}
 }
 
-int Robot_Client::sendZChange(int ZChange)
+int Robot_Client::sendZChange(long ZChange)
 {
 	if (robotStatus != readyToRecieve)
 	{
@@ -54,7 +54,7 @@ int Robot_Client::sendZChange(int ZChange)
 	return 0;
 }
 
-int Robot_Client::sendVChange(int VChange)
+int Robot_Client::sendVChange(long VChange)
 {
 	if (robotStatus != readyToRecieve)
 	{
@@ -72,7 +72,7 @@ int Robot_Client::sendVChange(int VChange)
 	return 0;
 }
 
-int Robot_Client::sendZandVChange(int ZChange, int VChange)
+int Robot_Client::sendZandVChange(long ZChange, long VChange)
 {
 	if (robotStatus != readyToRecieve)
 	{
