@@ -26,16 +26,13 @@ MultiThreading::MultiThreading(){
     rotation.data = rot;
     objective.data = Fobj;
     mesures.data = y;
-    displacement.data = x;
-	correction.data = 0;
-    
+    displacement.data = x;    
 }
 
 MultiThreading::MultiThreading(Eigen::VectorXd rot, Eigen::VectorXd y, Eigen::VectorXd x){
     rotation.data = rot;
     mesures.data = y;
     displacement.data = x;
-	correction.data = 0;
 }
 
 
@@ -86,7 +83,11 @@ void MultiThreading::runKalman(KalmanFilter Kf){
     while(true){
 		target_time = std::chrono::steady_clock::now() + std::chrono::milliseconds(10);
         i +=1;
-        correction.data = Kf.update(mesures.data);
+		{
+			std::lock_guard<std::mutex> guard_1(mesures.m);
+			std::lock_guard<std::mutex> guard_2(kalman_out.m);
+			kalman_out.data = Kf.update(mesures.data);
+		}
 		{
 			std::lock_guard<std::mutex> guard(m_prompt);
 			cout << "Kalman " << i << endl; 
@@ -117,14 +118,15 @@ void MultiThreading::sendData(){
 
 	robot_client = new Robot_Client("192.168.1.99", "5000");
     int i = 0;
+	long correction = 0; // Correction avec un gain de 1 000 000
 	std::chrono::high_resolution_clock::time_point target_time;
-    while(true){													  
-        i +=1;
+    while(true){
 		target_time = std::chrono::steady_clock::now() + std::chrono::milliseconds(10);
+		i += 1;
+		correction += (long) floor(1000000*kalman_out.data);
 		if (robot_client->readyToSend())
 		{
-			std::lock_guard<std::mutex> guard(correction.m);
-			robot_client->sendZChange(correction.data);
+			robot_client->sendZChange(correction);
 		}
 		{
 			std::lock_guard<std::mutex> guard(m_prompt);

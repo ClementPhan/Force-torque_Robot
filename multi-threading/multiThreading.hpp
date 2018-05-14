@@ -40,7 +40,7 @@ private:
 	shared_data<Eigen::VectorXd> displacement;
 	shared_data<Eigen::VectorXd> objective;
 
-	shared_data<double> correction;
+	shared_data<double> kalman_out;
 
 	// Other mutexes
 	mutex m_prompt; // For cout or other prompt actions
