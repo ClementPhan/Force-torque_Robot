@@ -56,7 +56,7 @@ int FT_Client::stopStream()
 	return 0;
 }
 
-int FT_Client::update(int donnees_capteur[6])
+int FT_Client::update(int (&donnees_capteur)[6])
 {
 	const int responseLength = 36;
 	char response[responseLength];
