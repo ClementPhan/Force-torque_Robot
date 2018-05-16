@@ -1,9 +1,12 @@
 MODULE Tache_Principale
+
     !***********************************************************
     !
-    ! Module: Tache_Principale
+    ! Module : Main
     !
-    ! Description : Correction en Z avec multitasking -> La correction appliquée dans la tâche principale est calculée dans la tâche serveur et est communiquée via RMQ [Interrupt].
+    ! Description : Main Motion Task
+    !               - PROC main() -> Mouvement du Robot avec iterrupt pour correction
+    !               - TRAP routine() -> Reception messages RMQ & correction de la trajectoire selon l'axe normal (Z) et de la vitesse
     !
     ! Auteur : Nahkriin
     !
@@ -11,14 +14,11 @@ MODULE Tache_Principale
     !
     !***********************************************************
 
+    ! =============DECLARATIONS============
+
+    ! Communication
 
 	VAR intnum rmqint; ! ID de la routine RMQ
-
-    VAR corrdescr z_id; !Variables de correction
-    VAR pos write_offset;
-    VAR pos total_offset;
-
-	VAR num offset;
 
 	VAR rmqheader rmqheader1;   !Variables message RMQ
 	VAR rmqslot rmqslot1;
@@ -26,19 +26,29 @@ MODULE Tache_Principale
 
     VAR string msg1;    !Data du message RMQ
 
-    PERS bool flag; !Booleen de declenchement de la correction
-
-    VAR bool flag1;
+    VAR bool flag1; !Booleens de conversion
     VAR bool flag2;
 
-    PERS tasks task_list1{2} := [["TestServeur"], ["T_ROB1"]];  !Varibales de stnchronisation des tasks
+     PERS tasks task_list1{2} := [["TestServeur"], ["T_ROB1"]];  !Varibales de stnchronisation des tasks
     VAR syncident sync1;
-    VAR syncident sync2;
+
+    ! Correction
+
+    PERS bool flag; !Booleen de declenchement de la correction
+
+    VAR corrdescr z_id; !Variables de correction
+    VAR pos write_offset;
+    VAR pos total_offset;
+
+	VAR num offset; !Offset de correction selon l'axe z
+    VAR num emergency:=0;  !Offset backwards d'arret d'urgence
+    VAR num r:=100; !Ratio de correction de la vitesse
+    CONST num resolution:=10; !Resolution de la discretisation de la trajectoire
+
+    ! Mouvement
 
     CONST num speed:=100;
-    VAR num r:=100;
 
-    ! =============DECLARATIONS============
     VAR speeddata MySpeed:=[speed,100,5000,1000];
 
     CONST jointtarget Targ0:=[[33.91,89.83,-18.86,0,19.03,0],[0,9E+09,9E+09,9E+09,9E+09,9E+09]];
@@ -99,13 +109,14 @@ MODULE Tache_Principale
 
     CONST jointtarget Targ54:=[[-35.74,90.77,-21.87,0,21.09,0],[0,9E+09,9E+09,9E+09,9E+09,9E+09]];
 
-!Routine de reception RMQ et correction
+    ! =============FOCNTIONS============
 
 	TRAP routine
 
-        VAR num ind:=1;
+        VAR num ind:=1; !Indices de lecture
         VAR num newind;
-        VAR string offset1;
+
+        VAR string offset1; !Variables de correction
         VAR string ratio1;
 
         !Partie reception
@@ -116,14 +127,25 @@ MODULE Tache_Principale
     	IF rmqheader1.datatype = "string" AND rmqheader1.ndim = 0 THEN
 
     		RMQGetMsgData rmqmessage1, msg1;    !Recuperation des donnees
-            newind := StrMatch(msg1,ind," ") + 1;
-            offset1:= StrPart(msg1,ind,newind - ind -1);
 
-            ind:=newind;
-            ratio1:= StrPart(msg1,ind,StrLen(msg1)-ind+1);
+            IF msg1="Stop" THEN !Arret d'urgence : on revient en arrière et on lève le bras du robot.
 
-            flag1 := StrToVal(offset1, offset);    !Conversion des donnees
-            flag2 := StrToVal(ratio1, r);
+                emergency:=-resolution;
+                offset:=100;
+                r:=100;
+
+            ELSE
+
+                newind := StrMatch(msg1,ind," ") + 1;
+                offset1:= StrPart(msg1,ind,newind - ind -1);
+
+                ind:=newind;
+                ratio1:= StrPart(msg1,ind,StrLen(msg1)-ind+1);
+
+                flag1 := StrToVal(offset1, offset);    !Conversion des donnees
+                flag2 := StrToVal(ratio1, r);
+
+            ENDIF
 
     	ELSE
 
@@ -135,17 +157,20 @@ MODULE Tache_Principale
 
         VelSet r,speed; !Modifiaction de la vitesse
 
-        write_offset.x := 0;
+        write_offset.x := emergency;    !Modification de la position
         write_offset.y := 0;
         write_offset.z := offset;
 
         TPWrite "On corrige"\Num:=offset;
         TPWrite "Ratio vitesse"\Num:=r;
-        CorrWrite z_id, write_offset;
+
+        CorrWrite z_id, write_offset;   !Application de la correction
 
         RMQEmptyQueue;
 
 	ENDTRAP
+
+
     PROC main()
 
         CorrCon z_id;	!Connection du correcteur
@@ -219,7 +244,8 @@ MODULE Tache_Principale
         MoveL Targ53,MySpeed,Fine,Tool0\WObj:=WObj0\Corr;
 
         TPWrite "Stop routine."; !Test de fin du process
-        IDelete rmqint;
+
+        IDelete rmqint; !Deconnexion
         CorrClear;
 
         MoveAbsJ Targ0,MySpeed,z1,Tool0; !Retour au point de depart
