@@ -2,11 +2,6 @@
 #include "ClientTCP.hpp"
 
 
-ClientTCP::ClientTCP(void)
-{
-	ClientTCP(DEFAULT_ADDRESS_TCP, DEFAULT_PORT_TCP);
-}
-
 ClientTCP::ClientTCP(const char* address, const char* port)
 {
     // create WSADATA object

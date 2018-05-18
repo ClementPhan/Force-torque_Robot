@@ -8,10 +8,6 @@
 
 // size of our buffer
 #define DEFAULT_BUFLEN 512
-// address ot connect through
-#define DEFAULT_ADDRESS_UDP "200.200.200.99"
-// port to connect sockets through
-#define DEFAULT_PORT_UDP "49152"
 // Need to link with Ws2_32.lib, Mswsock.lib, and Advapi32.lib
 #pragma comment (lib, "Ws2_32.lib")
 #pragma comment (lib, "Mswsock.lib")
@@ -22,7 +18,6 @@ class ClientUDP
 public:
 
     // ctor/dtor
-    ClientUDP(void); // Defaults to "200.200.200.99:49152"
 	ClientUDP(char* address, char* port);
     ~ClientUDP(void);
 

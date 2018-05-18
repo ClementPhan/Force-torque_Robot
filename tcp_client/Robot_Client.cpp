@@ -2,7 +2,7 @@
 
 Robot_Client::Robot_Client(void)
 {
-	network = new ClientTCP(); // TODO : change to make the defaults in "Robot_Client.hpp" instead of "clientTCP.h"
+	network = new ClientTCP(DEFAULT_ADDRESS_TCP, DEFAULT_PORT_TCP); 
 }
 
 Robot_Client::Robot_Client(char* address, char* port)
