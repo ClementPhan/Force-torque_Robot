@@ -5,6 +5,10 @@
 #include <sstream>
 #include "ClientTCP.hpp"
 
+// port to connect sockets through 
+#define DEFAULT_PORT_TCP "49151"
+#define DEFAULT_ADDRESS_TCP "200.200.200.99"
+
 const int recvbuflen = 25;
 
 // Robot status. Note that msgError indicates a badly formatted message, untreated by the robot while networkError is a non-treatable message recieved by this client.

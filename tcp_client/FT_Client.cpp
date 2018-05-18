@@ -4,7 +4,7 @@
 
 FT_Client::FT_Client(void)
 {
-	network = new ClientUDP();
+	network = new ClientUDP(DEFAULT_ADDRESS_UDP, DEFAULT_PORT_UDP);
 }
 
 FT_Client::FT_Client(char* address, char* port)

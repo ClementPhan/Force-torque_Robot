@@ -4,6 +4,11 @@
 #include <cstring>
 #include "ClientUDP.hpp"
 
+// address ot connect through
+#define DEFAULT_ADDRESS_UDP "200.200.200.99"
+// port to connect sockets through
+#define DEFAULT_PORT_UDP "49152"
+
 class FT_Client
 {
 private:
