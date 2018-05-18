@@ -22,7 +22,7 @@ FT_Client::~FT_Client(void)
 
 int FT_Client::startStream()
 {
-	if (isStreamStarted = false)
+	if (isStreamStarted == false)
 	{
 		const int messageLength = 8;
 		char message[messageLength] = { 0 };
@@ -40,7 +40,7 @@ int FT_Client::startStream()
 
 int FT_Client::stopStream()
 {
-	if (isStreamStarted = true)
+	if (isStreamStarted == true)
 	{
 		const int messageLength = 8;
 		char message[messageLength] = { 0 };
@@ -56,8 +56,13 @@ int FT_Client::stopStream()
 	return 0;
 }
 
-int FT_Client::update(int (&donnees_capteur)[6])
+int FT_Client::update(int (&donnees_capteur)[6]) //Must be used with a started stream
 {
+	if (isStreamStarted == false)
+	{
+		printf("Stream not started");
+		return -1;
+	}
 	const int responseLength = 36;
 	char response[responseLength];
 	int iResult = 0;
@@ -65,7 +70,7 @@ int FT_Client::update(int (&donnees_capteur)[6])
 	iResult = NetworkServices::receiveMessage(network->ConnectSocket, response, responseLength);
 	if ((iResult < 0) || (iResult != responseLength))
 	{
-		printf("corrupted message");
+		printf("FT corrupted message");
 		return 1;
 	}
 	for (int i = 0; i < 6; i++)

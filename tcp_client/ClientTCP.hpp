@@ -24,7 +24,6 @@ public:
     SOCKET ConnectSocket;
 
     // ctor/dtor
-    ClientTCP(void);
 	ClientTCP(const char * address, const char * port);
     ~ClientTCP(void);
 

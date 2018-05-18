@@ -18,7 +18,6 @@ class ClientUDP
 public:
 
     // ctor/dtor
-    ClientUDP(void); // Defaults to "200.200.200.99:49152"
 	ClientUDP(char* address, char* port);
     ~ClientUDP(void);
 
