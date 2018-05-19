@@ -18,18 +18,18 @@ MODULE Tache_Principale
 
     ! Communication
 
-	VAR intnum rmqint; ! ID de la routine RMQ
+		VAR intnum rmqint; ! ID de la routine RMQ
 
-	VAR rmqheader rmqheader1;   !Variables message RMQ
-	VAR rmqslot rmqslot1;
-	VAR rmqmessage rmqmessage1;
+		VAR rmqheader rmqheader1;   !Variables message RMQ
+		VAR rmqslot rmqslot1;
+		VAR rmqmessage rmqmessage1;
 
     VAR string msg1;    !Data du message RMQ
 
     VAR bool flag1; !Booleens de conversion
     VAR bool flag2;
 
-     PERS tasks task_list1{2} := [["TestServeur"], ["T_ROB1"]];  !Varibales de stnchronisation des tasks
+   	PERS tasks task_list1{2} := [["TestServeur"], ["T_ROB1"]];  !Varibales de stnchronisation des tasks
     VAR syncident sync1;
 
     ! Correction
@@ -40,10 +40,19 @@ MODULE Tache_Principale
     VAR pos write_offset;
     VAR pos total_offset;
 
-	VAR num offset; !Offset de correction selon l'axe z
+		VAR num offset; !Offset de correction selon l'axe z
     VAR num emergency:=0;  !Offset backwards d'arret d'urgence
     VAR num r:=100; !Ratio de correction de la vitesse
     CONST num resolution:=10; !Resolution de la discretisation de la trajectoire
+
+		! Mesure Latence
+
+		VAR clock timer_correction;
+		VAR num temps_correction;
+
+		PERS bool mesure;
+
+		VAR intnum int;
 
     ! Mouvement
 
@@ -128,6 +137,11 @@ MODULE Tache_Principale
 
     		RMQGetMsgData rmqmessage1, msg1;    !Recuperation des donnees
 
+				IF mesure THEN	!Tester après Parsing aussi !
+					ClkReset timer_correction;
+					ClkStart timer_correction;
+				ENDIF
+
             IF msg1="Stop" THEN !Arret d'urgence : on revient en arrière et on lève le bras du robot.
 
                 emergency:=-resolution;
@@ -170,13 +184,34 @@ MODULE Tache_Principale
 
 	ENDTRAP
 
+	TRAP routine_mesure
+
+					VAR pos position;
+					VAR num coordonnee;
+
+					position:=CPos(\Tool:=Tool0 \WObj:=WObj0);
+					coordonnee:=position.z;
+
+					IF coordonnee>offset THEN
+						temps_correction := ClkRead(timer_correction);
+						TPWrite "Temps correction"\Num:=temps_correction;
+						ClkReset timer_correction;
+					ENDIF
+
+	ENDTRAP
+
 
     PROC main()
 
         CorrCon z_id;	!Connection du correcteur
 
-		CONNECT rmqint WITH routine;    !Connection a la routine de correction
-		IRMQMessage msg1, rmqint;
+				CONNECT rmqint WITH routine;    !Connection a la routine de correction
+				IRMQMessage msg1, rmqint;
+
+				IF mesure THEN
+					CONNECT int WITH routine_mesure;
+					ITimer, 0.1, int;
+				ENDIF
 
         RMQEmptyQueue;  !Vidage de la queue RMQ
 

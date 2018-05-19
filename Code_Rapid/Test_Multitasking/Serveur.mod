@@ -23,7 +23,7 @@ MODULE Serveur
 
     ! =============DECLARATIONS============
 
-    !Communication
+    ! Communication
 
     VAR socketdev clientSocket; !Variables serveur
     VAR socketdev serverSocket;
@@ -43,7 +43,7 @@ MODULE Serveur
 
     VAR num msg_ok:=-1; !Variable de validite du message
 
-    !Post-traitement
+    ! Post-traitement
 
     VAR string OFFSET:="0"; !Valeurs du message par defaut
     VAR string RATIO:="100";
@@ -62,6 +62,13 @@ MODULE Serveur
     VAR num time;
 
     VAR num tau:=60;    !Temps de correction maximal
+
+    ! Mesure Latence
+
+    PERS bool mesure:=TRUE;
+
+    VAR clock timer_recepetion;
+    VAR num temps_reception;
 
     ! =============DECLARATIONS============
 
@@ -195,7 +202,13 @@ MODULE Serveur
 
         !Boucle du serveur
 
-        WHILE TRUE AND flag DO
+        WHILE flag DO
+
+            IF mesure THEN
+              ClkReset timer_recepetion;
+              ClkStart timer_recepetion;
+            ENDIF
+
             SocketReceive clientSocket \Str:=receivedString \Time:=WAIT_MAX;
             ParseMsg receivedString;
 
@@ -204,6 +217,11 @@ MODULE Serveur
             IF msg_ok=0 THEN
                 MESSAGE:="STOP";
                 RMQSendMessage destination_slot, MESSAGE;
+
+                IF mesure THEN
+                  temps_reception:=ClkRead(timer_recepetion);
+                  TPWrite "Temps envoi-réception"\Num:temps_reception;
+                ENDIF
 
                 WaitTime buffer;
 
@@ -218,7 +236,12 @@ MODULE Serveur
                 !Envoi du message RMQ
 
                 MESSAGE:=OFFSET+" "+RATIO;
-        		RMQSendMessage destination_slot, MESSAGE;
+        		    RMQSendMessage destination_slot, MESSAGE;
+
+                IF mesure THEN
+                  temps_reception:=ClkRead(timer_recepetion);
+                  TPWrite "Temps envoi-réception"\Num:temps_reception;
+                ENDIF
 
                 buffer:=resolution/speed;
                 WaitTime buffer;
