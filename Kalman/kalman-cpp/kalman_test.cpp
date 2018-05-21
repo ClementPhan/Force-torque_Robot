@@ -13,7 +13,7 @@ int main(int argc, char* argv[]) {
     int c = 2;
     
     float dt = 0.001;
-    double Fobj = 0;
+    double Fobj = 10;
 
     //initialize Filter
     KalmanFilter kf;
@@ -21,8 +21,8 @@ int main(int argc, char* argv[]) {
     
     // List of noisy position measurements (y)
     Eigen::MatrixXd measurements(3,3);
-    measurements << 0, 0, 20,
-                    0, 0, 23.1,
+    measurements << 20*tan(3.14/3), 0, 20,
+                    0, 0, 23,
                     0, 0, 20;
     
     measurements = measurements*pow(10,6);

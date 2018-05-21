@@ -32,7 +32,8 @@ public:
                  double dt,
                  double Fobj,
                  double L,
-                 double k, 
+                 double k,
+                 double v_robot, 
                  const Eigen::VectorXd& u,
                  const Eigen::MatrixXd& A, // matrice de doubles de taille non définie
                  const Eigen::MatrixXd& C,
