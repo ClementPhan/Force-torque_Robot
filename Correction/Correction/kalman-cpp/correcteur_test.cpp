@@ -3,7 +3,7 @@
 using namespace std;
 #include <Eigen/Dense>
 
-#include "kalman.hpp"
+#include "correcteur.hpp"
 
 int main(int argc, char* argv[]) {
     
