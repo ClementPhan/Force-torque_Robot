@@ -66,11 +66,9 @@ double KalmanFilter::update(Eigen::VectorXd y) {
     
     int Fz = y(2);
     
-    double x_dot = (1/k)*(Fz-Fobj*cos(alpha)) + sin(alpha)*v_robot;
+    double x = (1/k)*(Fz-Fobj*cos(alpha)) + sin(alpha)*v_robot;
     
-    double x = x_dot*dt;
-    
-    x_hat << x, x_dot;
+
     return x;
 
 }
