@@ -13,6 +13,7 @@
 #include <chrono>
 
 using namespace std;
+using namespace std::chrono;
 
 
 MultiThreading::MultiThreading(){
@@ -22,13 +23,13 @@ MultiThreading::MultiThreading(){
     Eigen::VectorXd Fobj(6);
     Eigen::VectorXd y(m);
     Eigen::VectorXd x(n);
-    ArrayXf integ = ArrayXd::Zeros(m);
+    Eigen::VectorXd integ(m);
     
     rotation.data = rot;
     objective.data = Fobj;
     mesures.data = y;
     displacement.data = x;
-    integral.data = integ;
+    integral.data = integ.setZero();
 }
 
 MultiThreading::MultiThreading(Eigen::VectorXd rot, Eigen::VectorXd y, Eigen::VectorXd x){
@@ -36,9 +37,7 @@ MultiThreading::MultiThreading(Eigen::VectorXd rot, Eigen::VectorXd y, Eigen::Ve
     mesures.data = y;
     displacement.data = x;
     
-    int m = y.rows();
-    ArrayXf integ = ArrayXd::Zeros(m);
-    integral.data = integ;
+    integral.data = y.setZero();
 }
 
 
@@ -102,7 +101,7 @@ void MultiThreading::runKalman(KalmanFilter Kf){
 		{
 			std::lock_guard<std::mutex> guard_2(kalman_out.m);
 			kalman_out.data = Kf.update(integral.data);
-            integral.data = Eigen::ArrayXd::Zeros(m);
+            integral.data.setZero();
 		}
 		{
 			std::lock_guard<std::mutex> guard(m_prompt);
@@ -131,9 +130,8 @@ void MultiThreading::acquireData(){
         
         std::lock_guard<std::mutex> guard(integral.m);
         std::chrono::steady_clock::time_point mesure_end = std::chrono::steady_clock::now();
-        std::chrono::steady_clock::duration time_span = mesure_end - mesure_begin;
+        duration<double> time_span = duration_cast<duration<double>>(mesure_end - mesure_begin;
         integral.data += mesures.data*time_span.count;
-        
     }
 }
 

@@ -39,7 +39,7 @@ private:
 	shared_data<Eigen::VectorXd> mesures;
 	shared_data<Eigen::VectorXd> displacement;
 	shared_data<Eigen::VectorXd> objective;
-    shared_data<Eigen::ArrayXd> integral;
+    shared_data<Eigen::VectorXd> integral;
 
 	shared_data<double> kalman_out;
 
@@ -59,14 +59,14 @@ public:
     Eigen::VectorXd getMesures();
     Eigen::VectorXd getDisplacement();
     Eigen::VectorXd getObjective();
-    Eigen::ArrayXd getIntegral();
+    Eigen::VectorXd getIntegral();
 
     // Modifiers
     void setRotation(Eigen::VectorXd rot);
     void setMesures(Eigen::VectorXd y);
     void setDisplacement(Eigen::VectorXd x);
     void setObjective(Eigen::VectorXd Fobj);
-    void setIntegral(Eigen::ArrayXd integ);
+    void setIntegral(Eigen::VectorXd integ);
 
     //loop functions
     void runKalman(KalmanFilter Kf);
