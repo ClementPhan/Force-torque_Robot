@@ -22,17 +22,23 @@ MultiThreading::MultiThreading(){
     Eigen::VectorXd Fobj(6);
     Eigen::VectorXd y(m);
     Eigen::VectorXd x(n);
+    ArrayXf integ = ArrayXd::Zeros(m);
     
     rotation.data = rot;
     objective.data = Fobj;
     mesures.data = y;
-    displacement.data = x;    
+    displacement.data = x;
+    integral.data = integ;
 }
 
 MultiThreading::MultiThreading(Eigen::VectorXd rot, Eigen::VectorXd y, Eigen::VectorXd x){
     rotation.data = rot;
     mesures.data = y;
     displacement.data = x;
+    
+    int m = y.rows();
+    ArrayXf integ = ArrayXd::Zeros(m);
+    integral.data = integ;
 }
 
 
@@ -56,6 +62,11 @@ Eigen::VectorXd MultiThreading::getObjective(){
     return objective.data;
 }
 
+Eigen::ArrayXd MultiThreading::getIntegral(){
+    std::lock_guard<std::mutex> guard(integral.m);
+    return integral.data;
+}
+
 void MultiThreading::setRotation(Eigen::VectorXd rot){
 	std::lock_guard<std::mutex> guard(rotation.m);
     rotation.data = rot;
@@ -76,6 +87,11 @@ void MultiThreading::setObjective(Eigen::VectorXd Fobj){
     objective.data = Fobj;
 }
 
+void MultiThreading::setIntegral(Eigen::arrayXd integ){
+    std::lock_guard<std::mutex> guard(integral.m);
+    integral.data = integ;
+}
+
 void MultiThreading::runKalman(KalmanFilter Kf){
      //cout << "Fobj1" << objective << endl;
     int i =0;
@@ -84,9 +100,9 @@ void MultiThreading::runKalman(KalmanFilter Kf){
 		target_time = std::chrono::steady_clock::now() + std::chrono::milliseconds(10);
         i +=1;
 		{
-			std::lock_guard<std::mutex> guard_1(mesures.m);
 			std::lock_guard<std::mutex> guard_2(kalman_out.m);
-			kalman_out.data = Kf.update(mesures.data);
+			kalman_out.data = Kf.update(integral.data);
+            integral.data = Eigen::ArrayXd::Zeros(m);
 		}
 		{
 			std::lock_guard<std::mutex> guard(m_prompt);
@@ -102,6 +118,7 @@ void MultiThreading::acquireData(){
 	int i=0;
     while(true){
 		i +=1;
+        std::chrono::steady_clock::time_point mesure_begin = std::chrono::steady_clock::now();
 		client_capteur->update(donnees_capteur);
 		{
 			std::lock_guard<std::mutex> guard(m_prompt);
@@ -111,6 +128,12 @@ void MultiThreading::acquireData(){
 			std::lock_guard<std::mutex> guard(mesures.m);
 			mesures.data << donnees_capteur[0], donnees_capteur[1], donnees_capteur[2], donnees_capteur[3], donnees_capteur[4], donnees_capteur[5];
 		}
+        
+        std::lock_guard<std::mutex> guard(integral.m);
+        std::chrono::steady_clock::time_point mesure_end = std::chrono::steady_clock::now();
+        std::chrono::steady_clock::duration time_span = mesure_end - mesure_begin;
+        integral.data += mesures.data*time_span.count;
+        
     }
 }
 
