@@ -27,10 +27,32 @@ int main(int argc, char* argv[]) {
     
     measurements = measurements*pow(10,6);
     
-    Eigen::VectorXd y(3);
-
+    Eigen::VectorXd y;
     
-    // Feed measurements into filter, output estimated states
+    
+    vector<Eigen::VectorXd> integral(1000);
+    
+    int i = 1;
+    int j =0;
+    while(i<= 880){
+        j++;
+        integral[0] << j, 0, 0, 0, 0, 0;
+        integral[i] << 1, 0, 0, 0, 0, 0;
+        i++;
+    }
+    
+    Eigen::VectorXd somme;
+    somme << 0, 0, 0, 0, 0, 0;
+    for(int k = 0; k < integral[0][1]; k++){
+        somme += integral[4];
+    }
+    
+    cout << somme[1] << endl;
+    
+    return 0;
+    
+    
+    /*// Feed measurements into filter, output estimated states
     float t = 0;
     for(int i = 0; i < measurements.rows(); i++) {
         t += dt;
@@ -44,5 +66,5 @@ int main(int argc, char* argv[]) {
         cout <<""<<endl;
     }
     
-    return 0;
+    return 0;*/
 }
