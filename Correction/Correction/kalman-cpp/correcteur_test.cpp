@@ -3,7 +3,12 @@
 using namespace std;
 #include <Eigen/Dense>
 
+#include <time.h>
+#include <chrono>
+
 #include "correcteur.hpp"
+
+using namespace std::chrono;
 
 int main(int argc, char* argv[]) {
     
@@ -27,27 +32,26 @@ int main(int argc, char* argv[]) {
     
     measurements = measurements*pow(10,6);
     
-    Eigen::VectorXd y;
+    Eigen::VectorXd y(6);
+    y << 1, 2, 3, 4, 5, 6;
+    Eigen::VectorXd integral(6);
+    integral.setZero();
     
     
-    vector<Eigen::VectorXd> integral(1000);
+    std::chrono::steady_clock::time_point mesure_begin = std::chrono::steady_clock::now();
+
+    std::cout << "printing out 1000 stars...\n";
+    for (int i=0; i<1000; ++i) std::cout << "*";
+    std::cout << std::endl;
     
-    int i = 1;
-    int j =0;
-    while(i<= 880){
-        j++;
-        integral[0] << j, 0, 0, 0, 0, 0;
-        integral[i] << 1, 0, 0, 0, 0, 0;
-        i++;
-    }
     
-    Eigen::VectorXd somme;
-    somme << 0, 0, 0, 0, 0, 0;
-    for(int k = 0; k < integral[0][1]; k++){
-        somme += integral[4];
-    }
+    std::chrono::steady_clock::time_point mesure_end = std::chrono::steady_clock::now();
+    duration<double> time_span = duration_cast<duration<double> >(mesure_end - mesure_begin);
     
-    cout << somme[1] << endl;
+    integral += y*time_span.count();
+    
+    cout << integral << endl;
+    
     
     return 0;
     
