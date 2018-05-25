@@ -15,7 +15,6 @@ int main(int argc, char **argv)
 	robot_client = new Robot_Client("192.168.1.99", "5000");
 	Sleep(1000);
 	
-	printf("%i\n", robot_client->getRobotStatus());
 	int i = 0;
 	while (i < 10)
 	{
@@ -35,5 +34,4 @@ int main(int argc, char **argv)
 
 	
 	Sleep(10000);
-	printf("%i\n", robot_client->getRobotStatus());
 }
