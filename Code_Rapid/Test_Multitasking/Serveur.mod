@@ -30,7 +30,7 @@ MODULE Serveur
     VAR bool connected:=FALSE;  !Statut de la connexion
 
     !PERS string ipController:= "192.168.125.1"; !robot default IP
-    PERS string ipController:= "192.168.1.99"; !local IP for testing in simulation
+    PERS string ipController:= "172.29.2.10"; !local IP for testing in simulation
     PERS num serverPort:= 5000;
 
     VAR string receivedString;  !Message recu
@@ -41,7 +41,7 @@ MODULE Serveur
     PERS tasks task_list1{2} := [["TestServeur"], ["T_ROB1"]];   !Varibales de stnchronisation des tasks
     VAR syncident sync1;
 
-    VAR num msg_ok:=-1; !Variable de validite du message
+    VAR num msg_ok:=3; !Variable de validite du message
 
     ! Post-traitement
 
@@ -51,10 +51,11 @@ MODULE Serveur
     CONST num Gain:=1000000;    !Gain de la communication
 
     PERS bool flag:=TRUE;   !Booleen de declenchement de la correction
+    CONST num speedz := 12.6;   !Vitesse de correction verticale (ne dépend pas de speed !)
 
     VAR num speed:=100; !Vitesse du TCP (mm/s)
 
-    CONST num resolution:=10; !Resolution de la discretisation de la trajectoire (mm)
+    CONST num resolution:=5; !Résolution max des obstacles (mm)
 
     VAR num buffer:=0.5; !Temps de buffer pour la correction (s)
 
@@ -65,7 +66,7 @@ MODULE Serveur
 
     ! Mesure Latence
 
-    PERS bool mesure:=TRUE;
+    PERS bool mesure:=FALSE;
 
     VAR clock timer_recepetion;
     VAR num temps_reception;
@@ -220,10 +221,8 @@ MODULE Serveur
 
                 IF mesure THEN
                   temps_reception:=ClkRead(timer_recepetion);
-                  TPWrite "Temps envoi-réception"\Num:temps_reception;
+                  TPWrite "Temps envoi-reception"\Num:=temps_reception;
                 ENDIF
-
-                WaitTime buffer;
 
                 flag:=FALSE;
                 SocketSend clientSocket \Str := "Stop!";
@@ -240,10 +239,10 @@ MODULE Serveur
 
                 IF mesure THEN
                   temps_reception:=ClkRead(timer_recepetion);
-                  TPWrite "Temps envoi-réception"\Num:temps_reception;
+                  TPWrite "Temps envoi-reception"\Num:=temps_reception;
                 ENDIF
 
-                buffer:=resolution/speed;
+                buffer:=resolution/speedz;
                 WaitTime buffer;
 
                 time:=ClkRead(timer);
