@@ -38,10 +38,10 @@ MODULE Serveur
     VAR rmqslot destination_slot;   !Variable RMQ
     VAR string msg; !Message envoye
 
-    PERS tasks task_list1{2} := [["TestServeur"], ["T_ROB1"]];   !Varibales de stnchronisation des tasks
+    PERS tasks task_list{2} := [["Serveur"], ["T_ROB1"]];   !Varibales de stnchronisation des tasks
     VAR syncident sync1;
 
-    VAR num msg_ok:=3; !Variable de validite du message
+    VAR num msg_ok:=0; !Variable de validite du message
 
     ! Post-traitement
 
@@ -50,7 +50,7 @@ MODULE Serveur
 
     CONST num Gain:=1000000;    !Gain de la communication
 
-    PERS bool flag:=TRUE;   !Booleen de declenchement de la correction
+    PERS bool flag:=FALSE;   !Booleen de declenchement de la correction
     CONST num speedz := 12.6;   !Vitesse de correction verticale (ne dépend pas de speed !)
 
     VAR num speed:=100; !Vitesse du TCP (mm/s)
@@ -194,7 +194,7 @@ MODULE Serveur
         ServerCreateAndConnect ipController,serverPort;
         connected:=TRUE;
 
-        WaitSyncTask sync1, task_list1; !Synchronisation des deux tâches
+        WaitSyncTask sync1, task_list; !Synchronisation des deux tâches
 
         flag:=TRUE; !Top correction
 
