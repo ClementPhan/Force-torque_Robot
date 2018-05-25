@@ -68,7 +68,12 @@ double KalmanFilter::update(Eigen::VectorXd y) {
     
     double x = (1/k)*(Fz-Fobj*cos(alpha)) + sin(alpha)*v_robot;*/
     
-    double Fn = pow(y(0)*y(0) + y(1)*y(1) + y(2)*y(2), 1/2);
+    double Fn = -sqrt(y(0)*y(0) + y(1)*y(1) + y(2)*y(2));
+    
+    if(y(2) < 0){
+        Fn = -Fn;
+    }
+    
 
     double x = (1/k)*(Fn-Fobj); // la correction de pente sera ajoutée par le PID
 
