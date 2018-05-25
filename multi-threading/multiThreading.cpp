@@ -116,7 +116,7 @@ void MultiThreading::acquireData(){
 	std::chrono::high_resolution_clock::time_point mesure_begin, mesure_end;
 	std::chrono::duration<double> time_span;
 
-
+	client_capteur->startStream();
     while(true){
 		i +=1;
         mesure_begin = std::chrono::high_resolution_clock::now();
