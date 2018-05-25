@@ -56,6 +56,7 @@ double KalmanFilter::update(Eigen::VectorXd y) {
     y = y*pow(10,-6); // on enlève le gain d'un million
     
     c = 2; //why necessary ?
+    
     double alpha;
     if(y(2) == 0){
         alpha = 0;
@@ -66,7 +67,7 @@ double KalmanFilter::update(Eigen::VectorXd y) {
     
     int Fz = y(2);
     
-    double x = (1/k)*(Fz-Fobj*cos(alpha)) + sin(alpha)*v_robot;
+    double x = (1/k)*(Fz-Fobj)*cos(alpha)) + sin(alpha)*v_robot;*/
     
 
     return x;
