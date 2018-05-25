@@ -12,8 +12,7 @@ endif()
 
 set(SOURCE_FILES	../Correction/Correction/kalman-cpp/correcteur.cpp 
 					main.cpp 
-					multiThreading.cpp 
-					sending.cpp 
+					multiThreading.cpp
 					../tcp_client/ClientTCP.cpp 
 					../tcp_client/ClientUDP.cpp 
 					../tcp_client/FT_Client.cpp 
