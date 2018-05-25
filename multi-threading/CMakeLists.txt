@@ -10,7 +10,7 @@ if(CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
 endif()
 
-set(SOURCE_FILES ../Kalman/kalman-cpp/kalman.cpp 
+set(SOURCE_FILES	../Correction/Correction/kalman-cpp/correcteur.cpp 
 					main.cpp 
 					multiThreading.cpp 
 					sending.cpp 

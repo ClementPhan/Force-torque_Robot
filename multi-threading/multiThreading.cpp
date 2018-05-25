@@ -12,8 +12,6 @@
 #include <time.h>
 #include <chrono>
 
-using namespace std;
-using namespace std::chrono;
 
 
 MultiThreading::MultiThreading(){
@@ -61,7 +59,7 @@ Eigen::VectorXd MultiThreading::getObjective(){
     return objective.data;
 }
 
-Eigen::ArrayXd MultiThreading::getIntegral(){
+Eigen::VectorXd MultiThreading::getIntegral(){
     std::lock_guard<std::mutex> guard(integral.m);
     return integral.data;
 }
@@ -86,7 +84,7 @@ void MultiThreading::setObjective(Eigen::VectorXd Fobj){
     objective.data = Fobj;
 }
 
-void MultiThreading::setIntegral(Eigen::arrayXd integ){
+void MultiThreading::setIntegral(Eigen::VectorXd integ){
     std::lock_guard<std::mutex> guard(integral.m);
     integral.data = integ;
 }
@@ -96,7 +94,7 @@ void MultiThreading::runKalman(KalmanFilter Kf){
     int i =0;
 	std::chrono::high_resolution_clock::time_point target_time;
     while(true){
-		target_time = std::chrono::steady_clock::now() + std::chrono::milliseconds(10);
+		target_time = std::chrono::high_resolution_clock::now() + std::chrono::milliseconds(10);
         i +=1;
 		{
 			std::lock_guard<std::mutex> guard_2(kalman_out.m);
@@ -115,9 +113,13 @@ void MultiThreading::acquireData(){
 	client_capteur = new FT_Client();
 	int donnees_capteur[6] = { 0, 0, 0, 0, 0, 0 };  // Données avec un gain de 1 000 000
 	int i=0;
+	std::chrono::high_resolution_clock::time_point mesure_begin, mesure_end;
+	std::chrono::duration<double> time_span;
+
+
     while(true){
 		i +=1;
-        std::chrono::steady_clock::time_point mesure_begin = std::chrono::steady_clock::now();
+        mesure_begin = std::chrono::high_resolution_clock::now();
 		client_capteur->update(donnees_capteur);
 		{
 			std::lock_guard<std::mutex> guard(m_prompt);
@@ -128,10 +130,14 @@ void MultiThreading::acquireData(){
 			mesures.data << donnees_capteur[0], donnees_capteur[1], donnees_capteur[2], donnees_capteur[3], donnees_capteur[4], donnees_capteur[5];
 		}
         
-        std::lock_guard<std::mutex> guard(integral.m);
-        std::chrono::steady_clock::time_point mesure_end = std::chrono::steady_clock::now();
-        duration<double> time_span = duration_cast<duration<double>>(mesure_end - mesure_begin;
-        integral.data += mesures.data*time_span.count;
+        
+        mesure_end = std::chrono::high_resolution_clock::now();
+        time_span = std::chrono::duration_cast<std::chrono::duration<double> >(mesure_end - mesure_begin);
+		{
+			std::lock_guard<std::mutex> guard(integral.m);
+			integral.data += mesures.data * time_span.count();
+		}
+		
     }
 }
 
@@ -142,7 +148,7 @@ void MultiThreading::sendData(){
 	long correction = 0; // Correction avec un gain de 1 000 000
 	std::chrono::high_resolution_clock::time_point target_time;
     while(true){
-		target_time = std::chrono::steady_clock::now() + std::chrono::milliseconds(10);
+		target_time = std::chrono::high_resolution_clock::now() + std::chrono::milliseconds(10);
 		i += 1;
 		correction += (long) floor(1000000*kalman_out.data);
 		if (robot_client->readyToSend())
