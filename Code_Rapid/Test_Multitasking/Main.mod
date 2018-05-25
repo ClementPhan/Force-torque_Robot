@@ -18,11 +18,11 @@ MODULE Tache_Principale
 
     ! Communication
 
-		VAR intnum rmqint; ! ID de la routine RMQ
+	VAR intnum rmqint; ! ID de la routine RMQ
 
-		VAR rmqheader rmqheader1;   !Variables message RMQ
-		VAR rmqslot rmqslot1;
-		VAR rmqmessage rmqmessage1;
+	VAR rmqheader rmqheader1;   !Variables message RMQ
+	VAR rmqslot rmqslot1;
+	VAR rmqmessage rmqmessage1;
 
     VAR string msg1;    !Data du message RMQ
 
@@ -40,19 +40,19 @@ MODULE Tache_Principale
     VAR pos write_offset;
     VAR pos total_offset;
 
-		VAR num offset; !Offset de correction selon l'axe z
+	VAR num offset; !Offset de correction selon l'axe z
     VAR num emergency:=0;  !Offset backwards d'arret d'urgence
     VAR num r:=100; !Ratio de correction de la vitesse
     CONST num resolution:=10; !Resolution de la discretisation de la trajectoire
 
-		! Mesure Latence
+	! Mesure Latence
 
-		VAR clock timer_correction;
-		VAR num temps_correction;
+	VAR clock timer_correction;
+	VAR num temps_correction;
 
-		PERS bool mesure;
+	PERS bool mesure;
 
-		VAR intnum int;
+	VAR intnum int;
 
     ! Mouvement
 
@@ -128,6 +128,9 @@ MODULE Tache_Principale
         VAR string offset1; !Variables de correction
         VAR string ratio1;
 
+        VAR pos position;
+        VAR num coordonnee;
+
         !Partie reception
 
     	RMQGetMessage rmqmessage1;  !Reception du message RMQ
@@ -142,9 +145,9 @@ MODULE Tache_Principale
 					ClkStart timer_correction;
 				ENDIF
 
-            IF msg1="Stop" THEN !Arret d'urgence : on revient en arrière et on lève le bras du robot.
+            IF msg1="STOP" THEN !Arret d'urgence : on revient en arrière et on lève le bras du robot.
 
-                emergency:=-resolution;
+                emergency:=-resolution; ! A modifier !
                 offset:=100;
                 r:=100;
 
@@ -175,10 +178,14 @@ MODULE Tache_Principale
         write_offset.y := 0;
         write_offset.z := offset;
 
-        TPWrite "On corrige"\Num:=offset;
-        TPWrite "Ratio vitesse"\Num:=r;
-
         CorrWrite z_id, write_offset;   !Application de la correction
+
+        position:=CPos(\Tool:=Tool0 \WObj:=WObj0);
+        coordonnee:=position.z;
+
+        TPWrite "On corrige : "\Num:=offset;    !Monitoring correction
+        !TPWrite "Ratio vitesse"\Num:=r;
+        !TPWrite "Position actuelle du robot : "\Num:=coordonnee;   !Monitoring position
 
         RMQEmptyQueue;
 
@@ -186,32 +193,34 @@ MODULE Tache_Principale
 
 	TRAP routine_mesure
 
-					VAR pos position;
-					VAR num coordonnee;
+    	VAR pos position;
+    	VAR num coordonnee;
 
-					position:=CPos(\Tool:=Tool0 \WObj:=WObj0);
-					coordonnee:=position.z;
+    	position:=CPos(\Tool:=Tool0 \WObj:=WObj0);
+    	coordonnee:=position.z;
 
-					IF coordonnee>offset THEN
-						temps_correction := ClkRead(timer_correction);
-						TPWrite "Temps correction"\Num:=temps_correction;
-						ClkReset timer_correction;
-					ENDIF
+    	IF coordonnee>offset-0.1 THEN
+            TPWrite "position : "\Num:=coordonnee;
+    		temps_correction := ClkRead(timer_correction);
+    		TPWrite "Temps correction : "\Num:=temps_correction;
+            IDelete int;
+    		ClkReset timer_correction;
+    	ENDIF
 
 	ENDTRAP
 
 
     PROC main()
 
-        CorrCon z_id;	!Connection du correcteur
+        CorrCon z_id;	!Connexion du correcteur
 
-				CONNECT rmqint WITH routine;    !Connection a la routine de correction
-				IRMQMessage msg1, rmqint;
+		CONNECT rmqint WITH routine;    !Connexion a la routine de correction
+		IRMQMessage msg1, rmqint;
 
-				IF mesure THEN
-					CONNECT int WITH routine_mesure;
-					ITimer, 0.1, int;
-				ENDIF
+		IF mesure THEN
+			CONNECT int WITH routine_mesure;    !Connexion a la routine de mesure
+			ITimer 0.1, int;
+		ENDIF
 
         RMQEmptyQueue;  !Vidage de la queue RMQ
 
@@ -281,6 +290,8 @@ MODULE Tache_Principale
         TPWrite "Stop routine."; !Test de fin du process
 
         IDelete rmqint; !Deconnexion
+        IDelete int;
+
         CorrClear;
 
         MoveAbsJ Targ0,MySpeed,z1,Tool0; !Retour au point de depart
