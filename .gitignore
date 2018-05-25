@@ -30,6 +30,7 @@
 
 # Cmake folders and files
 CMakeFiles/
+CMakeScripts/
 CMakeCache.txt
 cmake_install.cmake
 Makefile
