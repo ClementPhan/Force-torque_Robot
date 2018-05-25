@@ -29,7 +29,7 @@ MODULE Tache_Principale
     VAR bool flag1; !Booleens de conversion
     VAR bool flag2;
 
-   	PERS tasks task_list1{2} := [["TestServeur"], ["T_ROB1"]];  !Varibales de stnchronisation des tasks
+   	PERS tasks task_list{2} := [["Serveur"], ["T_ROB1"]];  !Varibales de stnchronisation des tasks
     VAR syncident sync1;
 
     ! Correction
@@ -41,7 +41,6 @@ MODULE Tache_Principale
     VAR pos total_offset;
 
 	VAR num offset; !Offset de correction selon l'axe z
-    VAR num emergency:=0;  !Offset backwards d'arret d'urgence
     VAR num r:=100; !Ratio de correction de la vitesse
     CONST num resolution:=10; !Resolution de la discretisation de la trajectoire
 
@@ -55,6 +54,8 @@ MODULE Tache_Principale
 	VAR intnum int;
 
     ! Mouvement
+
+    VAR pathrecid safe_id;
 
     CONST num speed:=100;
 
@@ -147,9 +148,8 @@ MODULE Tache_Principale
 
             IF msg1="STOP" THEN !Arret d'urgence : on revient en arrière et on lève le bras du robot.
 
-                emergency:=-resolution; ! A modifier !
-                offset:=100;
-                r:=100;
+                StorePath;
+                PathRecMoveBwd \ID:=safe_id \ToolOffs:=[0,0,100];
 
             ELSE
 
@@ -162,6 +162,25 @@ MODULE Tache_Principale
                 flag1 := StrToVal(offset1, offset);    !Conversion des donnees
                 flag2 := StrToVal(ratio1, r);
 
+                !Partie correction
+
+                VelSet r,speed; !Modifiaction de la vitesse
+
+                write_offset.x := 0;    !Modification de la position
+                write_offset.y := 0;
+                write_offset.z := offset;
+
+                CorrWrite z_id, write_offset;   !Application de la correction
+
+                position:=CPos(\Tool:=Tool0 \WObj:=WObj0);
+                coordonnee:=position.z;
+
+                TPWrite "On corrige : "\Num:=offset;    !Monitoring correction
+                !TPWrite "Ratio vitesse"\Num:=r;
+                !TPWrite "Position actuelle du robot : "\Num:=coordonnee;   !Monitoring position
+
+                RMQEmptyQueue;
+
             ENDIF
 
     	ELSE
@@ -169,25 +188,6 @@ MODULE Tache_Principale
     		TPWrite "Message RMQ non valide";
 
         ENDIF
-
-        !Partie correction
-
-        VelSet r,speed; !Modifiaction de la vitesse
-
-        write_offset.x := emergency;    !Modification de la position
-        write_offset.y := 0;
-        write_offset.z := offset;
-
-        CorrWrite z_id, write_offset;   !Application de la correction
-
-        position:=CPos(\Tool:=Tool0 \WObj:=WObj0);
-        coordonnee:=position.z;
-
-        TPWrite "On corrige : "\Num:=offset;    !Monitoring correction
-        !TPWrite "Ratio vitesse"\Num:=r;
-        !TPWrite "Position actuelle du robot : "\Num:=coordonnee;   !Monitoring position
-
-        RMQEmptyQueue;
 
 	ENDTRAP
 
@@ -229,9 +229,11 @@ MODULE Tache_Principale
 
         MoveAbsJ Targ0,MySpeed,z1,Tool0; ! Initialisation : le robot va au point de depart de la trajectoire
 
-        WaitSyncTask sync1, task_list1;  !Synchronisation des deux tâches
+        WaitSyncTask sync1, task_list;  !Synchronisation des deux tâches
 
         TPWrite "Starting routine."; !Test de declenchement du process
+
+        PathRecStart safe_id;
 
         MoveL Targ1,MySpeed,z1,Tool0\WObj:=WObj0\Corr;
         MoveL Targ2,MySpeed,z1,Tool0\WObj:=WObj0\Corr;
@@ -286,6 +288,8 @@ MODULE Tache_Principale
         MoveL Targ51,MySpeed,z1,Tool0\WObj:=WObj0\Corr;
         MoveL Targ52,MySpeed,z1,Tool0\WObj:=WObj0\Corr;
         MoveL Targ53,MySpeed,Fine,Tool0\WObj:=WObj0\Corr;
+
+        PathRecStop;
 
         TPWrite "Stop routine."; !Test de fin du process
 
