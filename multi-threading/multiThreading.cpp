@@ -98,7 +98,7 @@ void MultiThreading::runKalman(KalmanFilter Kf){
         i +=1;
 		{
 			std::lock_guard<std::mutex> guard_2(kalman_out.m);
-			kalman_out.data = Kf.update(integral.data);
+			kalman_out.data = Kf.update(integral.data/0.01);
             integral.data.setZero();
 		}
 		{
