@@ -23,11 +23,16 @@ MultiThreading::MultiThreading(){
     Eigen::VectorXd x(n);
     Eigen::VectorXd integ(m);
     
+    vector<vector<double> > > Fz(1000, 0);
+    vector<double> T(1000, 0);
+    
     rotation.data = rot;
     objective.data = Fobj;
     mesures.data = y;
     displacement.data = x;
     integral.data = integ.setZero();
+    vectFz = Fz;
+    vectT = T;
 }
 
 MultiThreading::MultiThreading(Eigen::VectorXd rot, Eigen::VectorXd y, Eigen::VectorXd x){
@@ -113,6 +118,7 @@ void MultiThreading::acquireData(){
 	client_capteur = new FT_Client();
 	int donnees_capteur[6] = { 0, 0, 0, 0, 0, 0 };  // Données avec un gain de 1 000 000
 	int i=0;
+    int n=0;
 	std::chrono::high_resolution_clock::time_point mesure_begin, mesure_end;
 	std::chrono::duration<double> time_span;
 
@@ -135,6 +141,8 @@ void MultiThreading::acquireData(){
         time_span = std::chrono::duration_cast<std::chrono::duration<double> >(mesure_end - mesure_begin);
 		{
 			std::lock_guard<std::mutex> guard(integral.m);
+            n = vectFz(0);
+            Fect(F)
 			integral.data += mesures.data * time_span.count();
 		}
 		
