@@ -5,6 +5,7 @@ using namespace std;
 
 #include <time.h>
 #include <chrono>
+#include vector
 
 #include "correcteur.hpp"
 
@@ -32,10 +33,7 @@ int main(int argc, char* argv[]) {
     
     measurements = measurements*pow(10,6);
     
-    Eigen::VectorXd y(6);
-    y << 1, 2, 3, 4, 5, 6;
-    Eigen::VectorXd integral(6);
-    integral.setZero();
+    
     
     
     std::chrono::steady_clock::time_point mesure_begin = std::chrono::steady_clock::now();
