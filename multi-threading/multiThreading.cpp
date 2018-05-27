@@ -23,16 +23,17 @@ MultiThreading::MultiThreading(){
     Eigen::VectorXd x(n);
     Eigen::VectorXd integ(m);
     
-    vector<vector<double> > > Fz(1000, 0);
-    vector<double> T(1000, 0);
+    double mC[1000][2];
+    for(int i=0; i<2; i++){
+        mC[0][i] = 0;
+    }
     
     rotation.data = rot;
     objective.data = Fobj;
     mesures.data = y;
     displacement.data = x;
     integral.data = integ.setZero();
-    vectFz = Fz;
-    vectT = T;
+    moindreCarres = mC;
 }
 
 MultiThreading::MultiThreading(Eigen::VectorXd rot, Eigen::VectorXd y, Eigen::VectorXd x){
@@ -41,6 +42,12 @@ MultiThreading::MultiThreading(Eigen::VectorXd rot, Eigen::VectorXd y, Eigen::Ve
     displacement.data = x;
     
     integral.data = y.setZero();
+    
+    double mC[1000][2];
+    for(int i=0; i<2; i++){
+        mC[0][i] = 0;
+    }
+    moindreCarres = mC;
 }
 
 
@@ -97,14 +104,43 @@ void MultiThreading::setIntegral(Eigen::VectorXd integ){
 void MultiThreading::runKalman(KalmanFilter Kf){
      //cout << "Fobj1" << objective << endl;
     int i =0;
+    double a, b;
+    double an = 0;
+    double ad = 0;
+    double tMoy = 0;
+    double FzMoy = 0;
+    double copie[1000][2];
 	std::chrono::high_resolution_clock::time_point target_time;
     while(true){
 		target_time = std::chrono::high_resolution_clock::now() + std::chrono::milliseconds(10);
         i +=1;
 		{
+            moindreCarres.m.lock;
+            copie = moindreCarres.data;
+            moindreCarres.m.unlock;
+            
+            // on calcule les moyennes
+            for(int j =1; j< copie[0][0]+1; j++){
+                FzMoy += copie[j][0];
+                tMoy += copie[j][1];
+            }
+            FzMoy /= copie[0][0];
+            tMoy /= copie[0][0];
+            
+            
+            //on effectue le calcul sur la copie
+            for(int j =1; j< copie[0][0]+1; j++){
+                an+= (copie[j][1]-tMoy)*(copie[j][0]-FzMoy);
+                ad+= (copie[j][1]-tMoy)*(copie[j][1]-tMoy);
+            }
+            a = an/ad;
+            b = yMoy - a*tMoy;
+            
+            kalman_out.data = Kf.update(a, b);
+            
 			std::lock_guard<std::mutex> guard_2(kalman_out.m);
-			kalman_out.data = Kf.update(integral.data/0.01);
-            integral.data.setZero();
+			/*kalman_out.data = Kf.update(integral.data/0.01);
+            integral.data.setZero();*/
 		}
 		{
 			std::lock_guard<std::mutex> guard(m_prompt);
@@ -140,10 +176,14 @@ void MultiThreading::acquireData(){
         mesure_end = std::chrono::high_resolution_clock::now();
         time_span = std::chrono::duration_cast<std::chrono::duration<double> >(mesure_end - mesure_begin);
 		{
-			std::lock_guard<std::mutex> guard(integral.m);
-            n = vectFz(0);
-            Fect(F)
-			integral.data += mesures.data * time_span.count();
+			//std::lock_guard<std::mutex> guard(integral.m);
+            //integral.data += mesures.data * time_span.count();
+            std::lock_guard<std::mutex> guard(moindreCarres.m);
+            n = moindreCarres[0][0];
+            moindreCarres[n+1][0] = mesure.data;
+            moindreCarres[n+1][1] = time_span.count();
+            n++;
+			
 		}
 		
     }

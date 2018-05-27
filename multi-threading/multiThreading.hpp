@@ -14,7 +14,6 @@
 #include "sending.hpp"
 #include "../tcp_client/FT_Client.hpp"
 #include "../tcp_client/Robot_Client.hpp"
-#include <vector>
 
 using namespace std;
 
@@ -42,7 +41,7 @@ private:
 	shared_data<Eigen::VectorXd> objective;
     shared_data<Eigen::VectorXd> integral;
     
-    shared_data<vector< vector<double> > > moindreCarrés;
+    shared_data<double[][] > moindreCarres;
 
 	shared_data<double> kalman_out;
 
