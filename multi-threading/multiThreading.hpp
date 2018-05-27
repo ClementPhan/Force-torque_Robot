@@ -11,7 +11,6 @@
 #include <mutex>
 
 #include "../Correction/Correction/kalman-cpp/correcteur.hpp"
-#include "sending.hpp"
 #include "../tcp_client/FT_Client.hpp"
 #include "../tcp_client/Robot_Client.hpp"
 

@@ -56,8 +56,8 @@ double KalmanFilter::update(Eigen::VectorXd y) {
     y = y*pow(10,-6); // on enlève le gain d'un million
     
     c = 2; //why necessary ?
-    
-    double alpha;
+
+    /*double alpha;
     if(y(2) == 0){
         alpha = 0;
     }
@@ -65,10 +65,17 @@ double KalmanFilter::update(Eigen::VectorXd y) {
         alpha = atan(y(0)/y(2));
     }
     
-    int Fz = y(2);
+    double Fz = y(2)/dt;
     
+
     double x = (1/k)*(Fz-Fobj)*cos(alpha)) + sin(alpha)*v_robot;*/
+
+
     
+    double Fn = pow(y(0)*y(0) + y(1)*y(1) + y(2)*y(2), 1/2);
+
+    double x = (1/k)*(Fn-Fobj); // la correction de pente sera ajoutée par le PID
+
 
     return x;
 
