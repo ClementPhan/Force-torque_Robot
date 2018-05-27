@@ -37,6 +37,11 @@ int main(int argc, char* argv[]) {
     Eigen::VectorXd integral(6);
     integral.setZero();
     
+    double  test[1000][2];
+    for(int i = 0; i< 2; i++){
+        test[0][i] = 0;
+    }
+    
     
     std::chrono::steady_clock::time_point mesure_begin = std::chrono::steady_clock::now();
 
