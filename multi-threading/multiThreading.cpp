@@ -180,7 +180,7 @@ void MultiThreading::acquireData(){
             //integral.data += mesures.data * time_span.count();
             std::lock_guard<std::mutex> guard(moindreCarres.m);
             n = moindreCarres[0][0];
-            moindreCarres[n+1][0] = mesure.data;
+            moindreCarres[n+1][0] = sqrt(pow(mesure.data[0], 2) + pow(mesure.data[1], 2) + pow(mesure.data[2], 2));
             moindreCarres[n+1][1] = time_span.count();
             n++;
 			
