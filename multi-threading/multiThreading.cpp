@@ -106,7 +106,7 @@ void MultiThreading::runKalman(KalmanFilter Kf){
     double ad = 0;
     double tMoy = 0;
     double FzMoy = 0;
-    double copie[1000][2];
+    double copie[10000][2];
 	std::chrono::high_resolution_clock::time_point target_time;
     while(true){
 		target_time = std::chrono::high_resolution_clock::now() + std::chrono::milliseconds(10);
@@ -135,16 +135,24 @@ void MultiThreading::runKalman(KalmanFilter Kf){
             }
             a = an/ad;
             b = FzMoy - a*tMoy;
-            
+
+			//on réinitialise
+			an = 0;
+			ad = 0;
+			FzMoy = 0;
+			tMoy = 0;
+
             kalman_out.data = Kf.update(a, b);
             
 			std::lock_guard<std::mutex> guard_2(kalman_out.m);
 			/*kalman_out.data = Kf.update(integral.data/0.01);
             integral.data.setZero();*/
 		}
+		if((i%50)==0)
 		{
 			std::lock_guard<std::mutex> guard(m_prompt);
-			cout << "Kalman " << i << endl; 
+			std::lock_guard<std::mutex> guard2(kalman_out.m);
+			cout << "Kalman " << kalman_out.data << endl; 
 		}
 		std::this_thread::sleep_until(target_time);
     }
@@ -163,9 +171,10 @@ void MultiThreading::acquireData(){
 		i +=1;
         mesure_begin = std::chrono::high_resolution_clock::now();
 		client_capteur->update(donnees_capteur);
+		if ((i%10000)==0)
 		{
 			std::lock_guard<std::mutex> guard(m_prompt);
-			cout << "Acquisition " << i << endl;
+			//cout << "Acquisition " << donnees_capteur[2] << endl;
 		}
 		{
 			std::lock_guard<std::mutex> guard(mesures.m);
@@ -183,6 +192,7 @@ void MultiThreading::acquireData(){
             moindreCarres.data.mC[n+1][0] = sqrt(pow(mesures.data[0], 2) + pow(mesures.data[1], 2) + pow(mesures.data[2], 2));
             moindreCarres.data.mC[n+1][1] = time_span.count();
             n++;
+			
 			moindreCarres.data.mC[0][0] = n;
 			
 		}
