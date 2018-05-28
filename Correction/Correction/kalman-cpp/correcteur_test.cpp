@@ -35,20 +35,46 @@ int main(int argc, char* argv[]) {
     
     
     
+    double  test[1000][2];
+    for(int i = 0; i< 2; i++){
+        test[0][i] = 0;
+    }
     
-    std::chrono::steady_clock::time_point mesure_begin = std::chrono::steady_clock::now();
+    
+    double copie[11][2];
+    for(int i=1; i<12; i++){
+        copie[i][0] = 6-i;
+        copie[i][1] = 0.1*(i-1);
+    }
+    
+    copie[0][0] = 11;
+    
 
-    std::cout << "printing out 1000 stars...\n";
-    for (int i=0; i<1000; ++i) std::cout << "*";
-    std::cout << std::endl;
+    
+    // on calcule les moyennes
+    double FzMoy = 0;
+    double tMoy = 0;
+    
+    for(int j =1; j< copie[0][0]+1; j++){
+        FzMoy += copie[j][0];
+        tMoy += copie[j][1];
+    }
+    FzMoy /= copie[0][0];
+    tMoy /= copie[0][0];
     
     
-    std::chrono::steady_clock::time_point mesure_end = std::chrono::steady_clock::now();
-    duration<double> time_span = duration_cast<duration<double> >(mesure_end - mesure_begin);
+    double an = 0;
+    double ad = 0;
+    double a, b;
+    //on effectue le calcul sur la copie
+    for(int j =1; j< copie[0][0]+1; j++){
+        an+= (copie[j][1]-tMoy)*(copie[j][0]-FzMoy);
+        ad+= (copie[j][1]-tMoy)*(copie[j][1]-tMoy);
+    }
+    a = an/ad;
+    b = FzMoy - a*tMoy;
     
-    integral += y*time_span.count();
-    
-    cout << integral << endl;
+    cout << " FzMoy "<< FzMoy << " tMoy "<< tMoy << " a " << a << " b " << b <<endl;
     
     
     return 0;

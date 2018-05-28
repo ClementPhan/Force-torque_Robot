@@ -52,8 +52,13 @@ void KalmanFilter::init() {
     initialized = true;
 }
 
-double KalmanFilter::update(Eigen::VectorXd y) {
-    y = y*pow(10,-6); // on enlève le gain d'un million
+double KalmanFilter::update(double a, double b) {
+    
+    a = a*pow(10,-6); // on enlève le gain d'un million
+    b = b*pow(10,-6);
+    double Fmoy = b + a*0.01/2;
+    
+    double aug = a*0.01;
     
     c = 2; //why necessary ?
 
@@ -72,9 +77,15 @@ double KalmanFilter::update(Eigen::VectorXd y) {
 
 
     
-    double Fn = pow(y(0)*y(0) + y(1)*y(1) + y(2)*y(2), 1/2);
+    /*double Fn = -sqrt(y(0)*y(0) + y(1)*y(1) + y(2)*y(2));
+    
+    if(y(2) < 0){
+        Fn = -Fn;
+    }*/ // à remettre dans Multi-threading !
+    
 
-    double x = (1/k)*(Fn-Fobj); // la correction de pente sera ajoutée par le PID
+    double x = (1/k)*(Fmoy-Fobj) + (1/k)*aug/2; // premier terme: correction immédiate
+                                                // deuxième terme: prise en compte de la pente: on rajoute directement la valeur moyenne prévue au cycle suivant
 
 
     return x;
