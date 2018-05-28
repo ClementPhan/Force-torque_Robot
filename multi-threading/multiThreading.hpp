@@ -39,10 +39,14 @@ private:
 	shared_data<Eigen::VectorXd> displacement;
 	shared_data<Eigen::VectorXd> objective;
     shared_data<Eigen::VectorXd> integral;
-    
-    shared_data<double[][] > moindreCarres;
 
-	shared_data<double> kalman_out;
+	struct MoindreCarres {
+		double mC[1000][2];
+	};
+    
+    shared_data<MoindreCarres> moindreCarres;
+
+	shared_data<double> kalman_out; // Correction in meters
 
 	// Other mutexes
 	mutex m_prompt; // For cout or other prompt actions

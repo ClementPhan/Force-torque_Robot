@@ -23,17 +23,16 @@ MultiThreading::MultiThreading(){
     Eigen::VectorXd x(n);
     Eigen::VectorXd integ(m);
     
-    double mC[1000][2];
-    for(int i=0; i<2; i++){
-        mC[0][i] = 0;
-    }
-    
+
     rotation.data = rot;
     objective.data = Fobj;
     mesures.data = y;
     displacement.data = x;
     integral.data = integ.setZero();
-    moindreCarres = mC;
+
+	for (int i = 0; i<2; i++) {
+		moindreCarres.data.mC[0][i] = 0;
+	}
 }
 
 MultiThreading::MultiThreading(Eigen::VectorXd rot, Eigen::VectorXd y, Eigen::VectorXd x){
@@ -43,11 +42,9 @@ MultiThreading::MultiThreading(Eigen::VectorXd rot, Eigen::VectorXd y, Eigen::Ve
     
     integral.data = y.setZero();
     
-    double mC[1000][2];
     for(int i=0; i<2; i++){
-        mC[0][i] = 0;
+		moindreCarres.data.mC[0][i] = 0;
     }
-    moindreCarres = mC;
 }
 
 
@@ -116,9 +113,11 @@ void MultiThreading::runKalman(KalmanFilter Kf){
         i +=1;
 		{
             //on effectue une copie des donnŽes afin de ne pas bloquer le processus pendant le (gros) calcul des coefficients
-            moindreCarres.m.lock;
-            copie = moindreCarres.data;
-            moindreCarres.m.unlock;
+			{
+				std::lock_guard<std::mutex> guard(moindreCarres.m);
+				memcpy(copie, moindreCarres.data.mC, sizeof(moindreCarres.data.mC));
+				moindreCarres.data.mC[0][0] = 0;
+			}
             
             // on calcule les moyennes
             for(int j =1; j< copie[0][0]+1; j++){
@@ -135,7 +134,7 @@ void MultiThreading::runKalman(KalmanFilter Kf){
                 ad+= (copie[j][1]-tMoy)*(copie[j][1]-tMoy);
             }
             a = an/ad;
-            b = FMoy - a*tMoy;
+            b = FzMoy - a*tMoy;
             
             kalman_out.data = Kf.update(a, b);
             
@@ -180,10 +179,11 @@ void MultiThreading::acquireData(){
 			//std::lock_guard<std::mutex> guard(integral.m);
             //integral.data += mesures.data * time_span.count();
             std::lock_guard<std::mutex> guard(moindreCarres.m);
-            n = moindreCarres[0][0];
-            moindreCarres[n+1][0] = sqrt(pow(mesure.data[0], 2) + pow(mesure.data[1], 2) + pow(mesure.data[2], 2));
-            moindreCarres[n+1][1] = time_span.count();
+            n = moindreCarres.data.mC[0][0];
+            moindreCarres.data.mC[n+1][0] = sqrt(pow(mesures.data[0], 2) + pow(mesures.data[1], 2) + pow(mesures.data[2], 2));
+            moindreCarres.data.mC[n+1][1] = time_span.count();
             n++;
+			moindreCarres.data.mC[0][0] = n;
 			
 		}
 		
@@ -197,7 +197,7 @@ void MultiThreading::sendData(){
 	long correction = 0; // Correction avec un gain de 1 000 000
 	std::chrono::high_resolution_clock::time_point target_time;
     while(true){
-		target_time = std::chrono::high_resolution_clock::now() + std::chrono::milliseconds(10);
+		target_time = std::chrono::high_resolution_clock::now() + std::chrono::milliseconds(10); //
 		i += 1;
 		correction += (long) floor(1000000*kalman_out.data);
 		if (robot_client->readyToSend())
