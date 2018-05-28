@@ -115,6 +115,7 @@ void MultiThreading::runKalman(KalmanFilter Kf){
 		target_time = std::chrono::high_resolution_clock::now() + std::chrono::milliseconds(10);
         i +=1;
 		{
+            //on effectue une copie des données afin de ne pas bloquer le processus pendant le (gros) calcul des coefficients
             moindreCarres.m.lock;
             copie = moindreCarres.data;
             moindreCarres.m.unlock;
@@ -134,7 +135,7 @@ void MultiThreading::runKalman(KalmanFilter Kf){
                 ad+= (copie[j][1]-tMoy)*(copie[j][1]-tMoy);
             }
             a = an/ad;
-            b = yMoy - a*tMoy;
+            b = FMoy - a*tMoy;
             
             kalman_out.data = Kf.update(a, b);
             
