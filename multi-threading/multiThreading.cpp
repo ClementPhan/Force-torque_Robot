@@ -209,9 +209,9 @@ void MultiThreading::sendData(){
     while(true){
 		target_time = std::chrono::high_resolution_clock::now() + std::chrono::milliseconds(10); //
 		i += 1;
-		correction += (long) floor(1000*kalman_out.data); //Correction is in mm, kalman is in m, gain is 1M
 		if (robot_client->readyToSend())
 		{
+			correction += (long)floor(1000 * kalman_out.data); //Correction is in mm, kalman is in m, gain is 1M
 			robot_client->sendZChange(correction);
 			{
 				std::lock_guard<std::mutex> guard(m_prompt);
