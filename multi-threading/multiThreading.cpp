@@ -213,11 +213,12 @@ void MultiThreading::sendData(){
 		if (robot_client->readyToSend())
 		{
 			robot_client->sendZChange(correction);
+			{
+				std::lock_guard<std::mutex> guard(m_prompt);
+				cout << "Sending " << i << endl;
+			}
 		}
-		{
-			std::lock_guard<std::mutex> guard(m_prompt);
-			cout << "Sending " << i << endl;
-		}
+		
 		std::this_thread::sleep_until(target_time);
     }
 }
