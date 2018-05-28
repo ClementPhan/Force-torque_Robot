@@ -55,9 +55,10 @@ void KalmanFilter::init() {
 double KalmanFilter::update(double a, double b) {
     
     a = a*pow(10,-6); // on enlève le gain d'un million
-    double Fmoy = a + b*0.01/2;
+    b = b*pow(10,-6);
+    double Fmoy = b + a*0.01/2;
     
-    double aug = b*0.01;
+    double aug = a*0.01;
     
     c = 2; //why necessary ?
     /*double alpha;

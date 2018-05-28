@@ -43,6 +43,41 @@ int main(int argc, char* argv[]) {
     }
     
     
+    double copie[11][2];
+    for(int i=1; i<12; i++){
+        copie[i][0] = 6-i;
+        copie[i][1] = 0.1*(i-1);
+    }
+    
+    copie[0][0] = 11;
+    
+
+    
+    // on calcule les moyennes
+    double FzMoy = 0;
+    double tMoy = 0;
+    
+    for(int j =1; j< copie[0][0]+1; j++){
+        FzMoy += copie[j][0];
+        tMoy += copie[j][1];
+    }
+    FzMoy /= copie[0][0];
+    tMoy /= copie[0][0];
+    
+    
+    double an = 0;
+    double ad = 0;
+    double a, b;
+    //on effectue le calcul sur la copie
+    for(int j =1; j< copie[0][0]+1; j++){
+        an+= (copie[j][1]-tMoy)*(copie[j][0]-FzMoy);
+        ad+= (copie[j][1]-tMoy)*(copie[j][1]-tMoy);
+    }
+    a = an/ad;
+    b = FzMoy - a*tMoy;
+    
+    cout << " FzMoy "<< FzMoy << " tMoy "<< tMoy << " a " << a << " b " << b <<endl;
+    
     
     return 0;
     
