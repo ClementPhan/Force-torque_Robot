@@ -43,20 +43,6 @@ int main(int argc, char* argv[]) {
     }
     
     
-    std::chrono::steady_clock::time_point mesure_begin = std::chrono::steady_clock::now();
-
-    std::cout << "printing out 1000 stars...\n";
-    for (int i=0; i<1000; ++i) std::cout << "*";
-    std::cout << std::endl;
-    
-    
-    std::chrono::steady_clock::time_point mesure_end = std::chrono::steady_clock::now();
-    duration<double> time_span = duration_cast<duration<double> >(mesure_end - mesure_begin);
-    
-    integral += y*time_span.count();
-    
-    cout << integral << endl;
-    
     
     return 0;
     
