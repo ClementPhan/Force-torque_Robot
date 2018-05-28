@@ -211,7 +211,7 @@ void MultiThreading::sendData(){
 		i += 1;
 		if (robot_client->readyToSend())
 		{
-			correction += (long)floor(1000 * kalman_out.data); //Correction is in mm, kalman is in m, gain is 1M
+			correction += lround(1000 * kalman_out.data); //Correction is in mm, kalman is in m, gain is 1M
 			robot_client->sendZChange(correction);
 			{
 				std::lock_guard<std::mutex> guard(m_prompt);

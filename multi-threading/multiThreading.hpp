@@ -35,8 +35,8 @@ private:
     
 	// Shared variables
 	shared_data<Eigen::VectorXd> rotation;
-	shared_data<Eigen::VectorXd> mesures;
-	shared_data<Eigen::VectorXd> displacement;
+	shared_data<Eigen::VectorXd> mesures; // in counts (micronewtons)
+	shared_data<Eigen::VectorXd> displacement; 
 	shared_data<Eigen::VectorXd> objective;
     shared_data<Eigen::VectorXd> integral;
 
