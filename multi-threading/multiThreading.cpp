@@ -188,7 +188,7 @@ void MultiThreading::acquireData(){
 			//std::lock_guard<std::mutex> guard(integral.m);
             //integral.data += mesures.data * time_span.count();
             std::lock_guard<std::mutex> guard(moindreCarres.m);
-            n = moindreCarres.data.mC[0][0];
+            n = lround(moindreCarres.data.mC[0][0]);
             moindreCarres.data.mC[n+1][0] = sqrt(pow(mesures.data[0], 2) + pow(mesures.data[1], 2) + pow(mesures.data[2], 2));
             moindreCarres.data.mC[n+1][1] = time_span.count();
             n++;
@@ -207,20 +207,32 @@ void MultiThreading::sendData(){
 	int ForceMax = 50;
 	long correction = 0; // Correction avec un gain de 1 000 000
 	std::chrono::high_resolution_clock::time_point target_time;
+	long kalmanSum=0;
+	int kalmanNo = 0;
     while(true){
 		target_time = std::chrono::high_resolution_clock::now() + std::chrono::milliseconds(10); //
 		i += 1;
+		{
+			kalmanSum += lround(1000000000 * kalman_out.data);
+			kalmanNo++;
+		}
+		
 		if (robot_client->readyToSend())
 		{
 			{
 				std::lock_guard<std::mutex> guard(mesures.m);
 				if (pow((mesures.data[0] / 1000000.0), 2) + pow((mesures.data[1] / 1000000.0), 2) > pow(ForceMax, 2))
 				{
-
+					robot_client->sendSTOP();
 				}
 			}
 			
-			correction += lround(1000000000 * kalman_out.data); //Correction is in mm, kalman is in m, gain is 1M
+			/*{
+				std::lock_guard<std::mutex> guard(kalman_out.m);
+				correction= lround(1000000000 * kalman_out.data);
+			}*/
+			correction = kalmanSum / kalmanNo;  //Correction is in mm, kalman is in m, gain is 1M
+			kalmanNo = 0;
 			robot_client->sendZChange(correction);
 			{
 				std::lock_guard<std::mutex> guard(m_prompt);
