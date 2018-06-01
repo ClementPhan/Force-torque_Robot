@@ -209,6 +209,18 @@ void MultiThreading::sendData(){
 	std::chrono::high_resolution_clock::time_point target_time;
 	long kalmanSum=0;
 	int kalmanNo = 0;
+	bool approachIsOver = false;
+
+	while (!approachIsOver) // No correction during the approach
+	{
+		std::this_thread::sleep_for(50ms);
+		std::lock_guard<std::mutex> guard(mesures.m);
+		if (abs(mesures.data(2)) < 2 * 1000000) // Check if force is less than 2 N
+		{
+			approachIsOver = true;
+		}
+	}
+
     while(true){
 		target_time = std::chrono::high_resolution_clock::now() + std::chrono::milliseconds(10); //
 		i += 1;
@@ -227,12 +239,8 @@ void MultiThreading::sendData(){
 					robot_client->sendSTOP();
 				}
 			}
-			
-			/*{
-				std::lock_guard<std::mutex> guard(kalman_out.m);
-				correction= lround(1000000000 * kalman_out.data);
-			}*/
-			correction = kalmanSum / kalmanNo;  //Correction is in mm, kalman is in m, gain is 1M
+
+			correction += kalmanSum / kalmanNo;  //Correction is in mm, kalman is in m, gain is 1M
 			kalmanNo = 0;
 			robot_client->sendZChange(correction);
 			{
