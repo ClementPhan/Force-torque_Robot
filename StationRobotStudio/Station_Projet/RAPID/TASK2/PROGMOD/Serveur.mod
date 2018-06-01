@@ -29,8 +29,8 @@ MODULE Serveur
     VAR socketdev serverSocket;
     VAR bool connected:=FALSE;  !Statut de la connexion
 
-    !PERS string ipController:= "192.168.125.1"; !robot default IP
-    PERS string ipController:= "192.168.1.99"; !local IP for testing in simulation
+    PERS string ipController:= "192.168.1.101"; !robot default IP
+    !PERS string ipController:= "192.168.1.99"; !local IP for testing in simulation
     PERS num serverPort:= 5000;
 
     VAR string receivedString;  !Message recu
@@ -51,27 +51,22 @@ MODULE Serveur
     VAR num offset_int:=0;
     VAR num ratio_int:=100;
 
-    CONST num Gain:=1;    !Gain de la communication
+    CONST num Gain:=1000000;    !Gain de la communication
+    
+    VAR clock timer;
+    VAR num time;
 
-    PERS bool flag:=TRUE;   !Booleen de declenchement de la correction
+    PERS bool flag:=FALSE;   !Booleen de declenchement de la correction
     CONST num speedz := 12.61;   !Vitesse de correction verticale (ne dépend pas de speed !)
-    CONST num speed:=50; !Vitesse du TCP (mm/s)
+    CONST num speed:=10; !Vitesse du TCP (mm/s)
 
-    CONST num resolution:=speedz/speed; !Correction max entre deux targets (mm)
+    CONST num resolution:=10; !Correction max entre deux targets (mm)
 
     VAR num buffer:=1/speed; !Temps de buffer pour la correction (s)
-
-    VAR clock timer;    !Variables d'horloge
-    VAR num time;
 
     VAR num tau:=120;    !Temps de correction maximal
 
     ! Mesure Latence
-
-    PERS bool mesure:=TRUE;
-
-    VAR clock timer_recepetion;
-    VAR num temps_reception;
 
     ! =============DECLARATIONS============
 
@@ -112,9 +107,6 @@ MODULE Serveur
         VAR string subString;
 
         VAR bool Conversion;    !Variable de conversion
-
-        VAR num offset_int; !Variables de correction
-        VAR num ratio_int;
 
         ! Find the end character
 
@@ -180,9 +172,6 @@ MODULE Serveur
         offset_int:=offset_int/Gain;
         ratio_int:=ratio_int/Gain;
 
-        OFFSET:=ValToStr(offset_int);
-        RATIO:=ValToStr(ratio_int);
-
     ENDPROC
 
 
@@ -196,34 +185,25 @@ MODULE Serveur
         connected:=TRUE;
 
         WaitSyncTask sync1, task_list; !Synchronisation des deux tâches
+        
+        !ClkReset(timer);
+        !ClkStart(timer);
 
         flag:=TRUE; !Top correction
-
-        ClkReset timer;
-        ClkStart timer; !Top horloge
 
         !Boucle du serveur
 
         WHILE flag DO
 
-            IF mesure THEN
-              ClkReset timer_recepetion;
-              ClkStart timer_recepetion;
-            ENDIF
-
             SocketReceive clientSocket \Str:=receivedString \Time:=WAIT_MAX;
             ParseMsg receivedString;
+            TPWrite "Message recu"+receivedString;
 
             RMQFindSlot destination_slot, "RMQ_T_ROB1";
 
             IF msg_ok=0 THEN
                 MESSAGE:="STOP";
                 RMQSendMessage destination_slot, MESSAGE;
-
-                IF mesure THEN
-                  temps_reception:=ClkRead(timer_recepetion);
-                  TPWrite "Temps envoi-reception"\Num:=temps_reception;
-                ENDIF
 
                 flag:=FALSE;
                 SocketSend clientSocket \Str := "Stop!";
@@ -233,41 +213,23 @@ MODULE Serveur
             ELSEIF msg_ok>0 THEN
                 SocketSend clientSocket \Str := "Recvd";
                 
-                !Pour test
-                
-!                WaitTime 2;
-!                offset_int:=15;
-                
-                IF offset_int>resolution THEN
-                    ratio_int:=(speedz*100)/(offset_int*speed);
-                    
-                ELSE
-                    ratio_int:=100;
-                ENDIF
+!                IF offset_int>resolution THEN !On augmente
+!                    ratio_int:=100;
+!                ELSEIF offset_int<-resolution THEN !On diminue
+!                    ratio_int:=25;
+!                ELSE
+!                    ratio_int:=50;
+!                ENDIF
 
 !                !Envoi du message RMQ
 
                 OFFSET:=ValToStr(offset_int);
                 RATIO:=ValToStr(ratio_int);
                 MESSAGE:=OFFSET+" "+RATIO;
-        		RMQSendMessage destination_slot, MESSAGE;
-                buffer:=100/(ratio_int*speed)-0.3;  !On enlève le temps de réglage de la vitesse
+        		RMQSendMessage destination_slot, MESSAGE; 
                 WaitTime buffer;
-                
-                !Pour test
-                
-!                MESSAGE:=OFFSET+" 100";
-!                RMQSendMessage destination_slot, MESSAGE;
-                
-
-                IF mesure THEN
-                  temps_reception:=ClkRead(timer_recepetion);
-                  TPWrite "Temps envoi-reception"\Num:=temps_reception;
-                ENDIF
 
                 time:=ClkRead(timer);
-                TPWrite ValtoStr(time);
-
                 IF time>tau THEN
                     flag:=FALSE;
                     SocketSend clientSocket \Str := "Stop!";
