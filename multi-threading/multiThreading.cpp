@@ -210,7 +210,7 @@ void MultiThreading::sendData(){
 	double kalmanData[101] = { 0 };
 	bool approachIsOver = false;
 
-	while (!approachIsOver) // No correction during the approach
+	/*while (!approachIsOver) // No correction during the approach
 	{
 		std::this_thread::sleep_for(50ms);
 		std::lock_guard<std::mutex> guard(mesures.m);
@@ -219,14 +219,14 @@ void MultiThreading::sendData(){
 			approachIsOver = true;
 			cout << "Approche terminée" << endl;
 		}
-	}
+	}*/
 
     while(true){
 		target_time = std::chrono::high_resolution_clock::now() + std::chrono::milliseconds(10); //
 		i += 1;
 		{
 			std::lock_guard<std::mutex> guard(kalman_out.m);
-			kalmanData[0]++;
+			kalmanData[0]+=1;
 			kalmanData[lround(kalmanData[0])] = kalman_out.data;
 		}
 		
@@ -240,15 +240,10 @@ void MultiThreading::sendData(){
 				}
 			}
 
-<<<<<<< Updated upstream
-			correction += lround(winsorize(kalmanData));  //Correction is in mm, kalman is in m, gain is 1M
+			cout << "winsorize" << lround(kalmanData[0]) << endl;
+			correction += lround(winsorize(kalmanData)*1000000000);  //Correction is in mm, kalman is in m, gain is 1M
 			kalmanData[0] = 0;
-=======
-			correction += kalmanSum / kalmanNo;  //Correction is in mm, kalman is in m, gain is 1M
-			kalmanNo = 0;
-			kalmanSum = 0;
 			robot_client->sendZChange(correction);
->>>>>>> Stashed changes
 			{
 				std::lock_guard<std::mutex> guard(m_prompt);
 				cout << "Sending " << correction << endl;
@@ -275,6 +270,7 @@ double MultiThreading::winsorize(double* data){
         mean += data[i];
         V += data[i]*data[i];
     }
+
     mean /= N;
     V = V/N-mean*mean;
     double Ec = sqrt(V);
@@ -292,12 +288,6 @@ double MultiThreading::winsorize(double* data){
         mean += data[i];
     }
     mean /= N;
-    
-    for(int i= 1; i < N+1; i++){
-        cout << data[i] << " " << flush;
-    }
-    cout << endl;
-    
     return mean;
 };
 
