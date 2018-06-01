@@ -5,15 +5,76 @@ using namespace std;
 
 #include <time.h>
 #include <chrono>
+#include <stdio.h>
 
 #include "correcteur.hpp"
 
 using namespace std::chrono;
 
+
+double winsorize(double* data){
+    /*double max = data[1];
+    double min = max;*/
+    double V = 0;
+    double mean = 0;
+    double N = data[0];
+    for(int i=1; i< N+1; i++){
+        /*if(data[i] > max){
+            max = data[i];
+        }
+        if(data[i] < min){
+            min = data[i];
+        }*/
+        mean += data[i];
+        V += data[i]*data[i];
+    }
+    mean /= N;
+    V = V/N-mean*mean;
+    double Ec = sqrt(V);
+    
+    for(int i=1; i < N+1; i++){
+        if(data[i] > mean + Ec/sqrt(N)){
+            data[i] = mean;
+        }
+        if(data[i] < mean - Ec/sqrt(N)){
+            data[i] = mean;
+        }
+    }
+    mean = 0;
+    for(int i=1; i < N+1; i++){
+        mean += data[i];
+    }
+    mean /= N;
+    
+    for(int i= 1; i < N+1; i++){
+        cout << data[i] << " " << flush;
+    }
+    cout << endl;
+    
+    return mean;
+};
+
 int main(int argc, char* argv[]) {
     
     
-    int n = 2;
+    double data[11] = {10, 0, 0.7, 0, 1.3, 0, 0, 0, 0, 0, 0};
+    double mean = 0;
+    for(int i=1; i< data[0]+1; i++){
+        mean += data[i];
+    }
+    mean /= data[0];
+    cout << mean << endl;
+
+    cout << winsorize(data) <<endl;
+    
+
+    
+    
+    
+    
+    
+    
+    /*int n = 2;
     int m = 1;
     int c = 2;
     
@@ -76,7 +137,7 @@ int main(int argc, char* argv[]) {
     a = an/ad;
     b = FzMoy - a*tMoy;
     
-    cout << " FzMoy "<< FzMoy << " tMoy "<< tMoy << " a " << a << " b " << b <<endl;
+    cout << " FzMoy "<< FzMoy << " tMoy "<< tMoy << " a " << a << " b " << b <<endl;*/
     
     
     return 0;
