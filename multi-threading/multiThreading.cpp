@@ -275,19 +275,27 @@ double MultiThreading::winsorize(double* data){
     V = V/N-mean*mean;
     double Ec = sqrt(V);
     
+	mean = 0;
+	int count = 0;
     for(int i=1; i < N+1; i++){
-        if(data[i] > mean + Ec/sqrt(N)){
+        /*if(data[i] > mean + Ec/sqrt(N)){
             data[i] = mean;
         }
         if(data[i] < mean - Ec/sqrt(N)){
             data[i] = mean;
-        }
+        }*/
+		if ((data[i] < mean + Ec / sqrt(N)) && (data[i] > mean - Ec / sqrt(N)))
+		{
+			mean += data[i];
+			count++;
+		}
     }
+	/*
     mean = 0;
     for(int i=1; i < N+1; i++){
         mean += data[i];
-    }
-    mean /= N;
+    }*/
+    mean /= count;
     return mean;
 };
 
