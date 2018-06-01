@@ -220,7 +220,7 @@ void MultiThreading::sendData(){
 			cout << "Approche terminée" << endl;
 		}
 	}*/
-
+	std::this_thread::sleep_for(50ms);
     while(true){
 		target_time = std::chrono::high_resolution_clock::now() + std::chrono::milliseconds(10); //
 		i += 1;
@@ -275,7 +275,7 @@ double MultiThreading::winsorize(double* data){
     V = V/N-mean*mean;
     double Ec = sqrt(V);
     
-	mean = 0;
+	double newMean = 0;
 	int count = 0;
     for(int i=1; i < N+1; i++){
         /*if(data[i] > mean + Ec/sqrt(N)){
@@ -284,9 +284,10 @@ double MultiThreading::winsorize(double* data){
         if(data[i] < mean - Ec/sqrt(N)){
             data[i] = mean;
         }*/
-		if ((data[i] < mean + Ec / sqrt(N)) && (data[i] > mean - Ec / sqrt(N)))
+		cout << "data et moyenne et Ec" << data[i] << " " << mean << " " << Ec << endl;
+		if ((data[i] <= mean + Ec*10 ) && (data[i] >= mean - Ec*10 ))
 		{
-			mean += data[i];
+			newMean += data[i];
 			count++;
 		}
     }
@@ -295,7 +296,9 @@ double MultiThreading::winsorize(double* data){
     for(int i=1; i < N+1; i++){
         mean += data[i];
     }*/
-    mean /= count;
-    return mean;
+
+	newMean /= count;
+	cout << "newMean" <<count<< endl;
+	return newMean; 
 };
 
