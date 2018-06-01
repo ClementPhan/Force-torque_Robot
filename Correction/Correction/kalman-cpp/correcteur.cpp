@@ -85,9 +85,11 @@ double KalmanFilter::update(double a, double b) {
     }*/ // à remettre dans Multi-threading !
     
 
-    double x = (1/k)*(Fmoy-Fobj) + (1/k)*augmentation /2; // premier terme: correction immédiate
+	double x = (1 / k)*(Fmoy - Fobj); //+ (1/k)*augmentation /2; // premier terme: correction immédiate
                                                 // deuxième terme: prise en compte de la pente: on rajoute directement la valeur moyenne prévue au cycle suivant
-
+	if (x < 0.0005 && x > -0.0005) {
+		x = 0;
+	}
 
     return x;
 
