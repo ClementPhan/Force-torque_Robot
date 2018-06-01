@@ -204,6 +204,7 @@ void MultiThreading::sendData(){
 
 	robot_client = new Robot_Client("192.168.1.99", "5000");
     int i = 0;
+	int ForceMax = 50;
 	long correction = 0; // Correction avec un gain de 1 000 000
 	std::chrono::high_resolution_clock::time_point target_time;
     while(true){
@@ -211,6 +212,14 @@ void MultiThreading::sendData(){
 		i += 1;
 		if (robot_client->readyToSend())
 		{
+			{
+				std::lock_guard<std::mutex> guard(mesures.m);
+				if (pow((mesures.data[0] / 1000000.0), 2) + pow((mesures.data[1] / 1000000.0), 2) > pow(ForceMax, 2))
+				{
+
+				}
+			}
+			
 			correction += lround(1000 * kalman_out.data); //Correction is in mm, kalman is in m, gain is 1M
 			robot_client->sendZChange(correction);
 			{
