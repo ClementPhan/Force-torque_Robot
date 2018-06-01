@@ -1,4 +1,3 @@
-//#include "StdAfx.hpp"
 #include "NetworkServices.hpp"
 
 int NetworkServices::sendMessage(SOCKET curSocket, char * message, int messageSize)

@@ -30,9 +30,20 @@
 
 # Cmake folders and files
 CMakeFiles/
+CMakeScripts/
 CMakeCache.txt
 cmake_install.cmake
 Makefile
 
 #VisualStudio project files
 .vs/
+
+#XCode buid and debug files
+*.build/
+*.xcodeproj/
+
+#Latex build and debug files
+*.aux
+*.out
+*.log
+*.synctex.gz
