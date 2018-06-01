@@ -207,8 +207,7 @@ void MultiThreading::sendData(){
 	int ForceMax = 50;
 	long correction = 0; // Correction avec un gain de 1 000 000
 	std::chrono::high_resolution_clock::time_point target_time;
-	long kalmanSum=0;
-	int kalmanNo = 0;
+	double kalmanData[101] = { 0 };
 	bool approachIsOver = false;
 
 	while (!approachIsOver) // No correction during the approach
@@ -226,8 +225,8 @@ void MultiThreading::sendData(){
 		i += 1;
 		{
 			std::lock_guard<std::mutex> guard(kalman_out.m);
-			kalmanSum += lround(1000000000 * kalman_out.data);
-			kalmanNo++;
+			kalmanData[0]++;
+			kalmanData[lround(kalmanData[0])] = kalman_out.data;
 		}
 		
 		if (robot_client->readyToSend())
@@ -240,9 +239,8 @@ void MultiThreading::sendData(){
 				}
 			}
 
-			correction += kalmanSum / kalmanNo;  //Correction is in mm, kalman is in m, gain is 1M
-			kalmanNo = 0;
-			robot_client->sendZChange(correction);
+			correction += lround(winsorize(kalmanData));  //Correction is in mm, kalman is in m, gain is 1M
+			kalmanData[0] = 0;
 			{
 				std::lock_guard<std::mutex> guard(m_prompt);
 				cout << "Sending " << correction << endl;
@@ -253,7 +251,7 @@ void MultiThreading::sendData(){
     }
 }
 
-double winsorize(double* data){
+double MultiThreading::winsorize(double* data){
     /*double max = data[1];
      double min = max;*/
     double V = 0;
