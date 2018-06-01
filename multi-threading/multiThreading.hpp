@@ -35,14 +35,18 @@ private:
     
 	// Shared variables
 	shared_data<Eigen::VectorXd> rotation;
-	shared_data<Eigen::VectorXd> mesures;
-	shared_data<Eigen::VectorXd> displacement;
+	shared_data<Eigen::VectorXd> mesures; // in counts (micronewtons)
+	shared_data<Eigen::VectorXd> displacement; 
 	shared_data<Eigen::VectorXd> objective;
     shared_data<Eigen::VectorXd> integral;
-    
-    shared_data<double[][] > moindreCarres;
 
-	shared_data<double> kalman_out;
+	struct MoindreCarres {
+		double mC[10000][2];
+	};
+    
+    shared_data<MoindreCarres> moindreCarres;
+
+	shared_data<double> kalman_out; // Correction in meters
 
 	// Other mutexes
 	mutex m_prompt; // For cout or other prompt actions

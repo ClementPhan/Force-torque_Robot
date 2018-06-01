@@ -36,6 +36,24 @@ bool Robot_Client::readyToSend(void)
 	}
 }
 
+int Robot_Client::sendSTOP()
+{
+	if (robotStatus != readyToRecieve)
+	{
+		printf("Robot not ready. Use 'msgcheck' first.\n");
+		return 1;
+	}
+	std::string s = "0#"; // Code 0 for STOP and recovery
+	int iResult = network->sendMessage(s.c_str(), s.length());
+	if (iResult != s.length()) //Check for proper message send
+	{
+		printf("Bad mesage send\n");
+		return 1;
+	}
+	robotStatus = waitingForResponse;
+	return 0;
+}
+
 int Robot_Client::sendZChange(long ZChange)
 {
 	if (robotStatus != readyToRecieve)
