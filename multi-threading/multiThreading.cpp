@@ -213,6 +213,7 @@ void MultiThreading::sendData(){
 		target_time = std::chrono::high_resolution_clock::now() + std::chrono::milliseconds(10); //
 		i += 1;
 		{
+			std::lock_guard<std::mutex> guard(kalman_out.m);
 			kalmanSum += lround(1000000000 * kalman_out.data);
 			kalmanNo++;
 		}
