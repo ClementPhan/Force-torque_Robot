@@ -159,7 +159,7 @@ void MultiThreading::runKalman(KalmanFilter Kf){
 }
 
 void MultiThreading::acquireData(){
-	client_capteur = new FT_Client();
+	client_capteur = new FT_Client("192.168.1.1","49152");
 	int donnees_capteur[6] = { 0, 0, 0, 0, 0, 0 };  // Données avec un gain de 1 000 000
 	int i=0;
     int n=0;
@@ -202,7 +202,7 @@ void MultiThreading::acquireData(){
 
 void MultiThreading::sendData(){
 
-	robot_client = new Robot_Client("192.168.1.99", "5000");
+	robot_client = new Robot_Client("192.168.1.101", "5000");
     int i = 0;
 	int ForceMax = 50;
 	long correction = 0; // Correction avec un gain de 1 000 000
