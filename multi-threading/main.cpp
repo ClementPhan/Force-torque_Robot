@@ -17,7 +17,7 @@ void runLoop2(KalmanFilter a){
 int main(int argc, char ** argv) {
 
     double dt = 1.0/30.0;
-	double forceObj = 5; // 5 newtons
+	double forceObj = 0; // 5 newtons
     
     
     // Initializing the Kalman filter characteristics

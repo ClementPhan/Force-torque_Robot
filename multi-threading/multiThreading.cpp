@@ -174,7 +174,7 @@ void MultiThreading::acquireData(){
 		if ((i%10000)==0)
 		{
 			std::lock_guard<std::mutex> guard(m_prompt);
-			//cout << "Acquisition " << donnees_capteur[2] << endl;
+			cout << "Acquisition " << donnees_capteur[2] << endl;
 		}
 		{
 			std::lock_guard<std::mutex> guard(mesures.m);
@@ -220,11 +220,11 @@ void MultiThreading::sendData(){
 				}
 			}
 			
-			correction += lround(1000 * kalman_out.data); //Correction is in mm, kalman is in m, gain is 1M
+			correction += lround(1000000000 * kalman_out.data); //Correction is in mm, kalman is in m, gain is 1M
 			robot_client->sendZChange(correction);
 			{
 				std::lock_guard<std::mutex> guard(m_prompt);
-				cout << "Sending " << i << endl;
+				cout << "Sending " << correction << endl;
 			}
 		}
 		
