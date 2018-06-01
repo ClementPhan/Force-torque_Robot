@@ -214,9 +214,10 @@ void MultiThreading::sendData(){
 	{
 		std::this_thread::sleep_for(50ms);
 		std::lock_guard<std::mutex> guard(mesures.m);
-		if (abs(mesures.data(2)) < 2 * 1000000) // Check if force is less than 2 N
+		if (abs(mesures.data(2)) > 1 * 1000000) // Check if force is less than 2 N
 		{
 			approachIsOver = true;
+			cout << "Approche terminée" << endl;
 		}
 	}
 
@@ -239,8 +240,15 @@ void MultiThreading::sendData(){
 				}
 			}
 
+<<<<<<< Updated upstream
 			correction += lround(winsorize(kalmanData));  //Correction is in mm, kalman is in m, gain is 1M
 			kalmanData[0] = 0;
+=======
+			correction += kalmanSum / kalmanNo;  //Correction is in mm, kalman is in m, gain is 1M
+			kalmanNo = 0;
+			kalmanSum = 0;
+			robot_client->sendZChange(correction);
+>>>>>>> Stashed changes
 			{
 				std::lock_guard<std::mutex> guard(m_prompt);
 				cout << "Sending " << correction << endl;
