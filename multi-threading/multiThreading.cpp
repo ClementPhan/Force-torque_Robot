@@ -152,7 +152,7 @@ void MultiThreading::runKalman(KalmanFilter Kf){
 		{
 			std::lock_guard<std::mutex> guard(m_prompt);
 			std::lock_guard<std::mutex> guard2(kalman_out.m);
-			cout << "Kalman " << kalman_out.data << endl; 
+			cout << "Kalman " << kalman_out.data *1000 << endl; 
 		}
 		std::this_thread::sleep_until(target_time);
     }
@@ -174,7 +174,7 @@ void MultiThreading::acquireData(){
 		if ((i%10000)==0)
 		{
 			std::lock_guard<std::mutex> guard(m_prompt);
-			cout << "Acquisition " << donnees_capteur[2] << endl;
+			//cout << "Acquisition " << donnees_capteur[2] << endl;
 		}
 		{
 			std::lock_guard<std::mutex> guard(mesures.m);
