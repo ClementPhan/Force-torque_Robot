@@ -252,3 +252,46 @@ void MultiThreading::sendData(){
 		std::this_thread::sleep_until(target_time);
     }
 }
+
+double winsorize(double* data){
+    /*double max = data[1];
+     double min = max;*/
+    double V = 0;
+    double mean = 0;
+    double N = data[0];
+    for(int i=1; i< N+1; i++){
+        /*if(data[i] > max){
+         max = data[i];
+         }
+         if(data[i] < min){
+         min = data[i];
+         }*/
+        mean += data[i];
+        V += data[i]*data[i];
+    }
+    mean /= N;
+    V = V/N-mean*mean;
+    double Ec = sqrt(V);
+    
+    for(int i=1; i < N+1; i++){
+        if(data[i] > mean + Ec/sqrt(N)){
+            data[i] = mean;
+        }
+        if(data[i] < mean - Ec/sqrt(N)){
+            data[i] = mean;
+        }
+    }
+    mean = 0;
+    for(int i=1; i < N+1; i++){
+        mean += data[i];
+    }
+    mean /= N;
+    
+    for(int i= 1; i < N+1; i++){
+        cout << data[i] << " " << flush;
+    }
+    cout << endl;
+    
+    return mean;
+};
+

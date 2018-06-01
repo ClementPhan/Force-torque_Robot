@@ -72,6 +72,7 @@ public:
     void setDisplacement(Eigen::VectorXd x);
     void setObjective(Eigen::VectorXd Fobj);
     void setIntegral(Eigen::VectorXd integ);
+    double winsorize(double *data);
 
     //loop functions
     void runKalman(KalmanFilter Kf);
