@@ -62,7 +62,7 @@ MODULE Serveur
 
     CONST num resolution:=10; !Correction max entre deux targets (mm)
 
-    VAR num buffer:=1/speed; !Temps de buffer pour la correction (s)
+    VAR num buffer:=0.1; !Temps de buffer pour la correction (s)
 
     VAR num tau:=120;    !Temps de correction maximal
 
@@ -213,14 +213,6 @@ MODULE Serveur
             ELSEIF msg_ok>0 THEN
                 SocketSend clientSocket \Str := "Recvd";
                 
-!                IF offset_int>resolution THEN !On augmente
-!                    ratio_int:=100;
-!                ELSEIF offset_int<-resolution THEN !On diminue
-!                    ratio_int:=25;
-!                ELSE
-!                    ratio_int:=50;
-!                ENDIF
-
 !                !Envoi du message RMQ
 
                 OFFSET:=ValToStr(offset_int);
