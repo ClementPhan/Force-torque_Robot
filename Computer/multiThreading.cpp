@@ -31,7 +31,7 @@ MultiThreading::MultiThreading(){
     integral.data = integ.setZero();
 
 	for (int i = 0; i<2; i++) {
-		moindreCarres.data.mC[0][i] = 0;
+		moindreCarres.data.mCx[0][i] = 0;
 	}
 }
 
@@ -43,7 +43,7 @@ MultiThreading::MultiThreading(Eigen::VectorXd rot, Eigen::VectorXd y, Eigen::Ve
     integral.data = y.setZero();
     
     for(int i=0; i<2; i++){
-		moindreCarres.data.mC[0][i] = 0;
+		moindreCarres.data.mCx[0][i] = 0;
     }
 }
 
@@ -101,12 +101,16 @@ void MultiThreading::setIntegral(Eigen::VectorXd integ){
 void MultiThreading::runKalman(KalmanFilter Kf){
      //cout << "Fobj1" << objective << endl;
     int i =0;
-    double a, b;
+    double ax, ay, az, bx, by, bz;
     double an = 0;
     double ad = 0;
     double tMoy = 0;
-    double FzMoy = 0;
-    double copie[10000][2];
+    double FxMoy = 0;
+	double FyMoy = 0;
+	double FzMoy = 0;
+    double copiex[10000][2];
+	double copiey[10000][2];
+	double copiez[10000][2];
 	std::chrono::high_resolution_clock::time_point target_time;
     while(true){
 		target_time = std::chrono::high_resolution_clock::now() + std::chrono::milliseconds(10);
@@ -115,34 +119,89 @@ void MultiThreading::runKalman(KalmanFilter Kf){
             //on effectue une copie des donnŽes afin de ne pas bloquer le processus pendant le (gros) calcul des coefficients
 			{
 				std::lock_guard<std::mutex> guard(moindreCarres.m);
-				memcpy(copie, moindreCarres.data.mC, sizeof(moindreCarres.data.mC));
-				moindreCarres.data.mC[0][0] = 0;
+				memcpy(copiex, moindreCarres.data.mCx, sizeof(moindreCarres.data.mCx));
+                memcpy(copiey, moindreCarres.data.mCy, sizeof(moindreCarres.data.mCy));
+                memcpy(copiez, moindreCarres.data.mCz, sizeof(moindreCarres.data.mCz));
+                
+				moindreCarres.data.mCx[0][0] = 0;
+                moindreCarres.data.mCy[0][0] = 0;
+                moindreCarres.data.mCz[0][0] = 0;
 			}
             
+            /////////////////////
             // on calcule les moyennes
-            for(int j =1; j< copie[0][0]+1; j++){
-                FzMoy += copie[j][0];
-                tMoy += copie[j][1];
+            for(int j =1; j< copiex[0][0]+1; j++){
+                FxMoy += copiex[j][0];
+                tMoy += copiex[j][1];
             }
-            FzMoy /= copie[0][0];
-            tMoy /= copie[0][0];
+            FxMoy /= copiex[0][0];
+            tMoy /= copiex[0][0];
             
             
             //on effectue le calcul sur la copie
-            for(int j =1; j< copie[0][0]+1; j++){
-                an+= (copie[j][1]-tMoy)*(copie[j][0]-FzMoy);
-                ad+= (copie[j][1]-tMoy)*(copie[j][1]-tMoy);
+            for(int j =1; j< copiex[0][0]+1; j++){
+                an+= (copiex[j][1]-tMoy)*(copiex[j][0]-FxMoy);
+                ad+= (copiex[j][1]-tMoy)*(copiex[j][1]-tMoy);
             }
-            a = an/ad;
-            b = FzMoy - a*tMoy;
+            ax = an/ad;
+            bx = FxMoy - ax*tMoy;
+            FxMoy = bx + ax*0.1/2;
 
 			//on réinitialise
 			an = 0;
 			ad = 0;
-			FzMoy = 0;
+			FxMoy = 0;
 			tMoy = 0;
+            
+            
+            /////////////////
+            for(int j =1; j< copiey[0][0]+1; j++){
+                FyMoy += copiey[j][0];
+            }
+            FyMoy /= copiey[0][0];
+            
+            
+            //on effectue le calcul sur la copie
+            for(int j =1; j< copiey[0][0]+1; j++){
+                an+= (copiey[j][1]-tMoy)*(copiey[j][0]-FzMoy);
+                ad+= (copiey[j][1]-tMoy)*(copiey[j][1]-tMoy);
+            }
+            ay = an/ad;
+            by = FyMoy - ay*tMoy;
+            
+            FyMoy = by+0.1*ay/2;
+            
+            
+            //on réinitialise
+            an = 0;
+            ad = 0;
+            FyMoy = 0;
+            tMoy = 0;
+            
+            
+            //////////////////////////
+            for(int j =1; j< copiez[0][0]+1; j++){
+                FzMoy += copiez[j][0];
+            }
+            FzMoy /= copiez[0][0];
+            
+            
+            //on effectue le calcul sur la copie
+            for(int j =1; j< copiez[0][0]+1; j++){
+                an+= (copiez[j][1]-tMoy)*(copiez[j][0]-FzMoy);
+                ad+= (copiez[j][1]-tMoy)*(copiez[j][1]-tMoy);
+            }
+            az = an/ad;
+            bz = FzMoy - az*tMoy;
+            FzMoy = bz+az*0.1/2;
+            
+            //on réinitialise
+            an = 0;
+            ad = 0;
+            FzMoy = 0;
+            tMoy = 0;
 
-            kalman_out.data = Kf.update(a, b);
+            kalman_out.data = Kf.update(az, bz);
             
 			std::lock_guard<std::mutex> guard_2(kalman_out.m);
 			/*kalman_out.data = Kf.update(integral.data/0.01);
@@ -188,13 +247,21 @@ void MultiThreading::acquireData(){
 			//std::lock_guard<std::mutex> guard(integral.m);
             //integral.data += mesures.data * time_span.count();
             std::lock_guard<std::mutex> guard(moindreCarres.m);
-            n = lround(moindreCarres.data.mC[0][0]);
-            moindreCarres.data.mC[n+1][0] = sqrt(pow(mesures.data[0], 2) + pow(mesures.data[1], 2) + pow(mesures.data[2], 2));
-            moindreCarres.data.mC[n+1][1] = time_span.count();
+
+            n = lround(moindreCarres.data.mCx[0][0]);
+            
+            moindreCarres.data.mCx[n+1][0] = mesures.data[0];
+            moindreCarres.data.mCy[n+1][0] = mesures.data[1];
+            moindreCarres.data.mCz[n+1][0] = mesures.data[2];
+            
+            moindreCarres.data.mCx[n+1][1] = time_span.count();
+            moindreCarres.data.mCy[n+1][1] = time_span.count();
+            moindreCarres.data.mCz[n+1][1] = time_span.count();
             n++;
 			
-			moindreCarres.data.mC[0][0] = n;
-			
+			moindreCarres.data.mCx[0][0] = n;
+			moindreCarres.data.mCy[0][0] = n;
+            moindreCarres.data.mCz[0][0] = n;
 		}
 		
     }
