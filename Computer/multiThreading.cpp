@@ -11,6 +11,7 @@
 #include <stdexcept>
 #include <time.h>
 #include <chrono>
+#include <fstream>
 
 
 
@@ -99,6 +100,9 @@ void MultiThreading::setIntegral(Eigen::VectorXd integ){
 }
 
 void MultiThreading::runKalman(KalmanFilter Kf){
+	ofstream output;
+	output.open("output.csv");
+	output << "Fx, Fy, Fz, Norme, correction";
      //cout << "Fobj1" << objective << endl;
     int i =0;
     double ax, ay, az, bx, by, bz;
@@ -147,6 +151,9 @@ void MultiThreading::runKalman(KalmanFilter Kf){
             bx = FxMoy - ax*tMoy;
             FxMoy = bx + ax*0.1/2;
 
+			//output to file 
+			output << FxMoy << ", ";
+
 			//on réinitialise
 			an = 0;
 			ad = 0;
@@ -170,6 +177,9 @@ void MultiThreading::runKalman(KalmanFilter Kf){
             by = FyMoy - ay*tMoy;
             
             FyMoy = by+0.1*ay/2;
+
+			//output to file 
+			output << FyMoy << ", ";
             
             
             //on réinitialise
@@ -194,6 +204,9 @@ void MultiThreading::runKalman(KalmanFilter Kf){
             az = an/ad;
             bz = FzMoy - az*tMoy;
             FzMoy = bz+az*0.1/2;
+
+			//output to file 
+			output << FzMoy << ", ";
             
             //on réinitialise
             an = 0;
@@ -201,9 +214,15 @@ void MultiThreading::runKalman(KalmanFilter Kf){
             FzMoy = 0;
             tMoy = 0;
 
-            kalman_out.data = Kf.update(az, bz);
             
-			std::lock_guard<std::mutex> guard_2(kalman_out.m);
+			{
+				std::lock_guard<std::mutex> guard_2(kalman_out.m);
+				kalman_out.data = Kf.update(az, bz);
+				//output to file 
+				output << kalman_out.data << "\n ";
+
+			}
+			
 			/*kalman_out.data = Kf.update(integral.data/0.01);
             integral.data.setZero();*/
 		}
