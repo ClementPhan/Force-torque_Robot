@@ -111,7 +111,7 @@ KalmanFilter KalmanFilter::setRobotKalman(double stepTime, double ForceObjective
     Eigen::MatrixXd P(n,n);
     Eigen::VectorXd u(c);
     
-    k = 3.1*pow(10,3); // Spring's stiffness (N/m)
+    k = 2.3*pow(10,3); // Spring's stiffness (N/m)
     
     L = 0.035; // Tool's length (mm)
     
