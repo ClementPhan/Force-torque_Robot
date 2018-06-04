@@ -105,13 +105,15 @@ void MultiThreading::runKalman(KalmanFilter Kf){
 	output << "Fx, Fy, Fz, Norme, correction";
      //cout << "Fobj1" << objective << endl;
     int i =0;
-    double ax, ay, az, bx, by, bz;
+    double ax, ay, az, bx, by, bz, a, b;
     double an = 0;
     double ad = 0;
     double tMoy = 0;
     double FxMoy = 0;
 	double FyMoy = 0;
 	double FzMoy = 0;
+    double FMoy = 0;
+    double copie[10000][2];
     double copiex[10000][2];
 	double copiey[10000][2];
 	double copiez[10000][2];
@@ -123,14 +125,42 @@ void MultiThreading::runKalman(KalmanFilter Kf){
             //on effectue une copie des donnŽes afin de ne pas bloquer le processus pendant le (gros) calcul des coefficients
 			{
 				std::lock_guard<std::mutex> guard(moindreCarres.m);
+                memcpy(copiex, moindreCarres.data.mC, sizeof(moindreCarres.data.mC));
 				memcpy(copiex, moindreCarres.data.mCx, sizeof(moindreCarres.data.mCx));
                 memcpy(copiey, moindreCarres.data.mCy, sizeof(moindreCarres.data.mCy));
                 memcpy(copiez, moindreCarres.data.mCz, sizeof(moindreCarres.data.mCz));
                 
+                moindreCarres.data.mC[0][0] = 0;
 				moindreCarres.data.mCx[0][0] = 0;
                 moindreCarres.data.mCy[0][0] = 0;
                 moindreCarres.data.mCz[0][0] = 0;
 			}
+            
+            
+            /////////////////////
+            // on calcule les moyennes
+            for(int j =1; j< copie[0][0]+1; j++){
+                FMoy += copie[j][0];
+                tMoy += copie[j][1];
+            }
+            FMoy /= copiex-[0][0];
+            tMoy /= copie[0][0];
+            
+            
+            //on effectue le calcul sur la copie
+            for(int j =1; j< copiex[0][0]+1; j++){
+                an+= (copie[j][1]-tMoy)*(copie[j][0]-FMoy);
+                ad+= (copie[j][1]-tMoy)*(copie[j][1]-tMoy);
+            }
+            a = an/ad;
+            b = FxMoy - a*tMoy;
+            FMoy = b + a*0.1/2;
+            
+            //on réinitialise
+            an = 0;
+            ad = 0;
+            tMoy = 0;
+            
             
             /////////////////////
             // on calcule les moyennes
@@ -157,7 +187,6 @@ void MultiThreading::runKalman(KalmanFilter Kf){
 			//on réinitialise
 			an = 0;
 			ad = 0;
-			FxMoy = 0;
 			tMoy = 0;
             
             
@@ -185,7 +214,6 @@ void MultiThreading::runKalman(KalmanFilter Kf){
             //on réinitialise
             an = 0;
             ad = 0;
-            FyMoy = 0;
             tMoy = 0;
             
             
@@ -211,13 +239,16 @@ void MultiThreading::runKalman(KalmanFilter Kf){
             //on réinitialise
             an = 0;
             ad = 0;
-            FzMoy = 0;
             tMoy = 0;
+
+           //Norme moyenne :
+			FMoy = b + a * 0.1 / 2;
+			output << FMoy << ", ";
 
             
 			{
 				std::lock_guard<std::mutex> guard_2(kalman_out.m);
-				kalman_out.data = Kf.update(az, bz);
+				kalman_out.data = Kf.update(a, b);
 				//output to file 
 				output << kalman_out.data << "\n ";
 
@@ -269,15 +300,18 @@ void MultiThreading::acquireData(){
 
             n = lround(moindreCarres.data.mCx[0][0]);
             
+            moindreCarres.data.mC[n+1][0] = mesures.data[0];
             moindreCarres.data.mCx[n+1][0] = mesures.data[0];
             moindreCarres.data.mCy[n+1][0] = mesures.data[1];
             moindreCarres.data.mCz[n+1][0] = mesures.data[2];
             
+            moindreCarres.data.mC[n+1][1] = time_span.count();
             moindreCarres.data.mCx[n+1][1] = time_span.count();
             moindreCarres.data.mCy[n+1][1] = time_span.count();
             moindreCarres.data.mCz[n+1][1] = time_span.count();
             n++;
 			
+            moindreCarres.data.mC[0][0] = n;
 			moindreCarres.data.mCx[0][0] = n;
 			moindreCarres.data.mCy[0][0] = n;
             moindreCarres.data.mCz[0][0] = n;
