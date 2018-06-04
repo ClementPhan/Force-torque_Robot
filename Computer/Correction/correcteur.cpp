@@ -87,7 +87,7 @@ double KalmanFilter::update(double a, double b) {
 
 	double x = (1 / k)*(Fmoy - Fobj); //+ (1/k)*augmentation /2; // premier terme: correction immédiate
                                                 // deuxième terme: prise en compte de la pente: on rajoute directement la valeur moyenne prévue au cycle suivant
-	if (x < 0.0005 && x > -0.0005) {
+	if (x < 0.0002 && x > -0.0002) {
 		//x = 0;
 	}
 
@@ -111,7 +111,8 @@ KalmanFilter KalmanFilter::setRobotKalman(double stepTime, double ForceObjective
     Eigen::MatrixXd P(n,n);
     Eigen::VectorXd u(c);
     
-    k = 2.3*pow(10,3); // Spring's stiffness (N/m)
+
+    k = 3.2*pow(10,3); // Spring's stiffness (N/m)
     
     L = 0.035; // Tool's length (mm)
     

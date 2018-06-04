@@ -204,7 +204,7 @@ void MultiThreading::sendData(){
 
 	robot_client = new Robot_Client("192.168.1.101", "5000");
     int i = 0;
-	int ForceMax = 50;
+	int ForceMax = 20;
 	long correction = 0; // Correction avec un gain de 1 000 000
 	std::chrono::high_resolution_clock::time_point target_time;
 	double kalmanData[101] = { 0 };
@@ -240,7 +240,6 @@ void MultiThreading::sendData(){
 				}
 			}
 
-			cout << "winsorize" << lround(kalmanData[0]) << endl;
 			correction += lround(winsorize(kalmanData)*1000000000);  //Correction is in mm, kalman is in m, gain is 1M
 			kalmanData[0] = 0;
 			robot_client->sendZChange(correction);
@@ -284,7 +283,7 @@ double MultiThreading::winsorize(double* data){
         if(data[i] < mean - Ec/sqrt(N)){
             data[i] = mean;
         }*/
-		cout << "data et moyenne et Ec" << data[i] << " " << mean << " " << Ec << endl;
+		
 		if ((data[i] <= mean + Ec*10 ) && (data[i] >= mean - Ec*10 ))
 		{
 			newMean += data[i];
@@ -298,7 +297,6 @@ double MultiThreading::winsorize(double* data){
     }*/
 
 	newMean /= count;
-	cout << "newMean" <<count<< endl;
 	return newMean; 
 };
 
