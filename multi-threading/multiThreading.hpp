@@ -41,7 +41,9 @@ private:
     shared_data<Eigen::VectorXd> integral;
 
 	struct MoindreCarres {
-		double mC[10000][2];
+		double mCx[10000][2];
+        double mCy[10000][2];
+        double mCz[10000][2];
 	};
     
     shared_data<MoindreCarres> moindreCarres;
