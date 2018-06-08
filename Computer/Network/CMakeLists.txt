@@ -8,7 +8,7 @@ add_executable(client_tcp
                main.cpp
                FT_Client.cpp
 			   Robot_Client.cpp
-			   ClientTCP.cpp
-			   ClientUDP.cpp
-			   NetworkServices.cpp)
+			   Network_Core/ClientTCP.cpp
+			   Network_Core/ClientUDP.cpp
+			   Network_Core/NetworkServices.cpp)
 

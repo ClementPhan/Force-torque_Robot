@@ -13,9 +13,10 @@ endif()
 set(SOURCE_FILES	main.cpp 
 					multiThreading.cpp
 					Correction/correcteur.cpp 
-					Network/ClientTCP.cpp 
-					Network/ClientUDP.cpp 
-					Network/FT_Client.cpp 
-					Network/NetworkServices.cpp 
-					Network/Robot_Client.cpp)
+					Network/Robot_Client.cpp
+					Network/FT_Client.cpp
+					Network/Network_Core/ClientTCP.cpp 
+					Network/Network_Core/ClientUDP.cpp					 
+					Network/Network_Core/NetworkServices.cpp 
+					)
 add_executable(main ${SOURCE_FILES})

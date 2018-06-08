@@ -201,11 +201,11 @@ void MultiThreading::runKalman(KalmanFilter Kf){
             FzMoy = 0;
             tMoy = 0;
 
-            kalman_out.data = Kf.update(az, bz);
             
-			std::lock_guard<std::mutex> guard_2(kalman_out.m);
-			/*kalman_out.data = Kf.update(integral.data/0.01);
-            integral.data.setZero();*/
+			{
+				std::lock_guard<std::mutex> guard_2(kalman_out.m);
+				kalman_out.data = Kf.update(az, bz);
+			}
 		}
 		if((i%50)==0)
 		{
@@ -244,8 +244,6 @@ void MultiThreading::acquireData(){
         mesure_end = std::chrono::high_resolution_clock::now();
         time_span = std::chrono::duration_cast<std::chrono::duration<double> >(mesure_end - mesure_begin);
 		{
-			//std::lock_guard<std::mutex> guard(integral.m);
-            //integral.data += mesures.data * time_span.count();
             std::lock_guard<std::mutex> guard(moindreCarres.m);
 
             n = lround(moindreCarres.data.mCx[0][0]);
@@ -277,16 +275,7 @@ void MultiThreading::sendData(){
 	double kalmanData[101] = { 0 };
 	bool approachIsOver = false;
 
-	/*while (!approachIsOver) // No correction during the approach
-	{
-		std::this_thread::sleep_for(50ms);
-		std::lock_guard<std::mutex> guard(mesures.m);
-		if (abs(mesures.data(2)) > 1 * 1000000) // Check if force is less than 2 N
-		{
-			approachIsOver = true;
-			cout << "Approche terminée" << endl;
-		}
-	}*/
+
 	std::this_thread::sleep_for(50ms);
     while(true){
 		target_time = std::chrono::high_resolution_clock::now() + std::chrono::milliseconds(10); //
@@ -321,18 +310,11 @@ void MultiThreading::sendData(){
 }
 
 double MultiThreading::winsorize(double* data){
-    /*double max = data[1];
-     double min = max;*/
+
     double V = 0;
     double mean = 0;
     double N = data[0];
     for(int i=1; i< N+1; i++){
-        /*if(data[i] > max){
-         max = data[i];
-         }
-         if(data[i] < min){
-         min = data[i];
-         }*/
         mean += data[i];
         V += data[i]*data[i];
     }
@@ -344,24 +326,12 @@ double MultiThreading::winsorize(double* data){
 	double newMean = 0;
 	int count = 0;
     for(int i=1; i < N+1; i++){
-        /*if(data[i] > mean + Ec/sqrt(N)){
-            data[i] = mean;
-        }
-        if(data[i] < mean - Ec/sqrt(N)){
-            data[i] = mean;
-        }*/
-		
 		if ((data[i] <= mean + Ec*10 ) && (data[i] >= mean - Ec*10 ))
 		{
 			newMean += data[i];
 			count++;
 		}
     }
-	/*
-    mean = 0;
-    for(int i=1; i < N+1; i++){
-        mean += data[i];
-    }*/
 
 	newMean /= count;
 	return newMean; 

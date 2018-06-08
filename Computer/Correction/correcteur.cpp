@@ -1,10 +1,3 @@
-/**
- * Implementation of KalmanFilter class.
- *
- * @author: Hayk Martirosyan
- * @date: 2014.11.15
- */
-
 #include <iostream>
 #include <stdexcept>
 #include <time.h>
@@ -61,32 +54,9 @@ double KalmanFilter::update(double a, double b) {
     
     double augmentation = a*0.01;
     
-    c = 2; //why necessary ?
-
-    /*double alpha;
-    if(y(2) == 0){
-        alpha = 0;
-    }
-    else{
-        alpha = atan(y(0)/y(2));
-    }
-    
-    double Fz = y(2)/dt;
-    
-
-    double x = (1/k)*(Fz-Fobj)*cos(alpha)) + sin(alpha)*v_robot;*/
-
-
-    
-    /*double Fn = -sqrt(y(0)*y(0) + y(1)*y(1) + y(2)*y(2));
-    
-    if(y(2) < 0){
-        Fn = -Fn;
-    }*/ // à remettre dans Multi-threading !
-    
-
+    c = 2;
 	double x = (1 / k)*(Fmoy - Fobj); //+ (1/k)*augmentation /2; // premier terme: correction immédiate
-                                                // deuxième terme: prise en compte de la pente: on rajoute directement la valeur moyenne prévue au cycle suivant
+                                      // deuxième terme: prise en compte de la pente: on rajoute directement la valeur moyenne prévue au cycle suivant
 	if (x < 0.0002 && x > -0.0002) {
 		//x = 0;
 	}
@@ -153,13 +123,7 @@ KalmanFilter KalmanFilter::setRobotKalman(double stepTime, double ForceObjective
     P <<  2.70229612*pow(10,-0) ,   3.40417948*pow(10,-22),
         3.40417948*pow(10,-22), 0;
 
-    
-    /*cout << "A: \n" << A << endl;
-     cout << "B: \n" << C << endl;
-     cout << " W: \n" <<  W << endl;
-     cout << "R: \n" << V  << endl;
-     cout << "P: \n" << P << endl;*/
-    
+     
     // Construct the filter
     KalmanFilter kf(dt, L, Fobj, k, v_robot, u, A, C, W, V, P);
     
